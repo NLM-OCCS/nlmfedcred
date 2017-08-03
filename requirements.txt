@@ -1,0 +1,7 @@
+pycrypto
+awscli
+boto
+bs4
+requests
+beautifulsoup4
+lxml
