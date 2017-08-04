@@ -47,6 +47,16 @@ def output_cmd(region, creds):
     print('set AWS_SESSION_TOKEN=%s' % creds.session_token)
 
 
+def output_creds(shell, region, creds):
+    if shell is None:
+        if 'SHELL' in os.environ:
+            shell = 'bash'
+        else:
+            shell = 'cmd'
+    output_func = {'cmd': output_cmd, 'bash': output_bash}[shell]
+    output_func(region, creds)
+
+
 def execute_from_command_line(args=None):
     fedcred.set_default_creds()
 
@@ -113,13 +123,4 @@ def execute_from_command_line(args=None):
         os.umask(int('0077', 8))
         sys.stdout = open(opts.output, 'w')
 
-    if opts.shell is not None:
-        shell = opts.shell
-    else:
-        if 'SHELL' in os.environ:
-            shell = 'bash'
-        else:
-            shell = 'cmd'
-
-    output_func = {'cmd': output_cmd, 'bash': output_bash}[shell]
-    output_func(opts.region, q.credentials)
+    output_creds(opts.shell, opts.region, q.credentials)
