@@ -1,3 +1,4 @@
+# run time
 pycrypto
 awscli
 boto
@@ -5,3 +6,8 @@ bs4
 requests
 beautifulsoup4
 lxml
+
+# tests
+pytest
+pytest-cov
+pytest-pythonpath

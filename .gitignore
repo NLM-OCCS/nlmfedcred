@@ -4,3 +4,7 @@
 /build/
 /MANIFEST
 *.egg-info
+/.cache/
+/.coverage
+/junit.xml
+
