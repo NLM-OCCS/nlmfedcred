@@ -6,6 +6,7 @@ import argparse
 from getpass import getpass
 from base64 import b64decode
 import nlmfedcred as fedcred
+from nlmfedcred.idp import make_idp, DEFAULT_IDP
 
 
 def parse_args(args):
@@ -26,6 +27,8 @@ def parse_args(args):
                         help="Choose either bash or cmd style output")
     parser.add_argument('--account', '-a', metavar='ACCOUNT', default=None,
                         help='Account number filters possible roles by account number match')
+    parser.add_argument('--idp', metavar='FQDN', default=None,
+                        help='Specify FQDN to use when making federation calls')
     parser.add_argument('--duration', metavar='SECONDS', default=None,
                         help='Specify the duration of the temporary credentials')
     opts = parser.parse_args(args)
@@ -65,6 +68,11 @@ def execute_from_command_line(args=None):
 
     opts = parse_args(args[1:])
 
+    if opts.idp is None:
+        idp = DEFAULT_IDP
+    else:
+        idp = make_idp(opts.idp)
+
     if opts.username is None:
         username = fedcred.get_user()
     else:
@@ -75,7 +83,7 @@ def execute_from_command_line(args=None):
     else:
         password = getpass('Enter Password: ')
 
-    samlvalue = fedcred.get_saml_assertion(username, password)
+    samlvalue = fedcred.get_saml_assertion(username, password, idp)
     if samlvalue == 'US-EN':
         sys.stderr.write('No SAML Binding: could it be an invalid password?\n')
         sys.exit(1)
