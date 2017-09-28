@@ -108,7 +108,14 @@ def execute_from_command_line(args=None):
         role = authroles[0][1]
     elif len(authroles) == 0:
         if opts.account is not None or opts.role is not None:
-            sys.stderr.write('No roles match your criteria for account and role\n')
+            authroles = fedcred.get_filtered_role_pairs(samlvalue)
+            if len(authroles) == 0:
+                sys.stderr.write('No roles found')
+            else:
+                sys.stderr.write('No roles match your criteria for account and role.\n')
+                sys.stderr.write('Available roles below:\n')
+                for pair in authroles:
+                    sys.stderr.write('  %s\n' % pair[1])
         else:
             sys.stderr.write('No roles found\n')
         sys.exit(1)
