@@ -1,20 +1,14 @@
 #!/usr/bin/env python
 from __future__ import print_function, unicode_literals
 import os
-import sys
-import argparse
 from bs4 import BeautifulSoup
 from lxml import etree
 from base64 import b64decode
 from boto import sts
-from boto import ec2
 import re
 import logging
 import requests
 
-
-IDP_FORM_URL = 'https://authtest.nih.gov/affwebservices/public/saml2sso?SPID=urn:amazon:webservices&appname=NLM'
-IDP_LOGIN_URL = 'https://authtest.nih.gov/siteminderagent/forms/login.fcc'
 
 logger = logging.getLogger(__name__)
 
@@ -60,10 +54,10 @@ def set_default_creds():
         os.environ.setdefault('AWS_SECRET_ACCESS_KEY', '9999999999999999')
 
 
-def get_hidden_inputs(session):
+def get_hidden_inputs(session, idp):
     if session is None:
         session = requests.session()
-    r = session.get(IDP_FORM_URL)
+    r = session.get(idp.form_url)
     assert r.ok
 
     soup = BeautifulSoup(r.content, 'lxml')
@@ -77,17 +71,16 @@ def get_hidden_inputs(session):
     return form_data
 
 
-def get_saml_assertion(username, password, session=None):
+def get_saml_assertion(username, password, idp, session=None):
     '''
     Authenticate against the IdP, and get the SAML assertion
     '''
     if session is None:
         session = requests.session()
-
-    form_data = get_hidden_inputs(session)
+    form_data = get_hidden_inputs(session, idp)
     form_data['USER'] = username
     form_data['PASSWORD'] = password
-    r = session.post(IDP_LOGIN_URL, form_data)
+    r = session.post(idp.login_url, form_data)
 
     if not r.ok:
         return r.status_code
