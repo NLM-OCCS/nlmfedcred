@@ -6,5 +6,6 @@
 *.egg-info
 /.cache/
 /.coverage
+/coverage.xml
 /junit.xml
 
