@@ -16,8 +16,10 @@ def test_cli():
 def test_idp():
     syms = dir(import_module('nlmfedcred.idp'))
     assert 'IDP' in syms
+    assert 'make_idp' in syms
 
 
 def test_config():
     syms = dir(import_module('nlmfedcred.config'))
     assert 'parse_config' in syms
+    assert 'Config' in syms

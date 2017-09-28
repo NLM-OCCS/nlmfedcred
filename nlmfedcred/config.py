@@ -1,10 +1,33 @@
-import os
 from configparser import ConfigParser
-from nlmfedcred.idp import IDP, DEFAULT_IDP, make_idp
+from collections import namedtuple
+import os
 
 
-def parse_config(path, account, role):
-    c = ConfigParser()
-    if os.path.isfile(path):
-        c.parse(path)
-    return c
+Config = namedtuple('Config', ('account', 'role', 'idp',))
+
+
+def parse_config(profile, account, role, idp, inipath=None):
+
+    if inipath is None:
+        inipath = os.path.join(os.path.expanduser('~'), '.getawscreds')
+
+    config = ConfigParser()
+    config.read(inipath)
+
+    if profile is not None and profile in config:
+        section = profile
+    else:
+        section = 'DEFAULT'
+
+    if account is None:
+        account = config.get(section, 'account', fallback=None)
+        if account is not None:
+            account = int(account)
+
+    if role is None:
+        role = config.get(section, 'role', fallback=None)
+
+    if idp is None:
+        idp = config.get(section, 'idp', fallback=None)
+
+    return Config(account, role, idp)

@@ -6,6 +6,7 @@ import argparse
 from getpass import getpass
 from base64 import b64decode
 import nlmfedcred as fedcred
+from nlmfedcred.config import parse_config
 from nlmfedcred.idp import make_idp, DEFAULT_IDP
 
 
@@ -27,6 +28,8 @@ def parse_args(args):
                         help="Choose either bash or cmd style output")
     parser.add_argument('--account', '-a', metavar='ACCOUNT', default=None,
                         help='Account number filters possible roles by account number match')
+    parser.add_argument('--profile', '-p', metavar='NAME', default=None,
+                        help='Specifies a section of $HOME/.getawscreds to use for your configuration')
     parser.add_argument('--idp', metavar='FQDN', default=None,
                         help='Specify FQDN to use when making federation calls')
     parser.add_argument('--duration', metavar='SECONDS', default=None,
@@ -68,10 +71,11 @@ def execute_from_command_line(args=None):
 
     opts = parse_args(args[1:])
 
-    if opts.idp is None:
+    config = parse_config(opts.profile, opts.account, opts.role, opts.idp)
+    if config.idp is None:
         idp = DEFAULT_IDP
     else:
-        idp = make_idp(opts.idp)
+        idp = make_idp(config.idp)
 
     if opts.username is None:
         username = fedcred.get_user()
@@ -98,7 +102,7 @@ def execute_from_command_line(args=None):
     principal = None
     role = None
 
-    authroles = fedcred.get_filtered_role_pairs(samlvalue, account=opts.account, name=opts.role)
+    authroles = fedcred.get_filtered_role_pairs(samlvalue, account=config.account, name=config.role)
     if len(authroles) == 1:
         principal = authroles[0][0]
         role = authroles[0][1]
