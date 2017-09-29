@@ -5,7 +5,7 @@ import sys
 import argparse
 from getpass import getpass
 from base64 import b64decode
-import nlmfedcred as fedcred
+from nlmfedcred import fedcred
 from nlmfedcred.config import parse_config
 from nlmfedcred.idp import make_idp, DEFAULT_IDP
 
