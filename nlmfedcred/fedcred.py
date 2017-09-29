@@ -115,9 +115,9 @@ def get_role_pairs(samlvalue):
 def filter_role_pairs(pairs, account=None, name=None):
     arn_expr = ''
     if account is not None:
-        arn_expr += 'arn:aws:iam::%s' % str(account)
+        arn_expr += 'arn:aws:iam::{:012d}'.format(account)
     if name is not None:
-        arn_expr += ':role/%s' % str(name)
+        arn_expr += ':role/{:s}'.format(name)
 
     if len(arn_expr) == 0:
         logger.debug('No account or role filtering')
