@@ -98,7 +98,7 @@ def get_role_pairs(samlvalue):
         'p': 'urn:oasis:names:tc:SAML:2.0:protocol',
         'a': 'urn:oasis:names:tc:SAML:2.0:assertion'
     }
-    tree = etree.fromstring(b64decode(samlvalue))
+    tree = etree.fromstring(b64decode(samlvalue), etree.XMLParser(resolve_entities=False))
     stmt = tree.xpath('/p:Response/a:Assertion/a:AttributeStatement', namespaces=namespaces)[0]
     pairs = []
     for a in stmt.xpath('a:Attribute', namespaces=namespaces):
