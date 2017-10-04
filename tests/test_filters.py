@@ -16,6 +16,13 @@ def samldata():
         return f.read()
 
 
+@pytest.fixture(scope='module')
+def samldatawg():
+    samlout_path = os.path.join(DATA_DIR, 'samlout-wg.b64')
+    with open(samlout_path, 'rb') as f:
+        return f.read()
+
+
 def test_data_decodes(samldata):
     samlxml = b64decode(samldata).decode('utf-8')
     assert type(samlxml) == str
@@ -26,6 +33,15 @@ def test_finds_all_roles(samldata):
     rolepairs = fedcred.get_role_pairs(samldata)
     assert isinstance(rolepairs, list)
     assert len(rolepairs) == 6
+    for pair in rolepairs:
+        assert isinstance(pair, tuple)
+        assert len(pair) == 2
+
+
+def test_finds_all_roles_in_wg(samldatawg):
+    rolepairs = fedcred.get_role_pairs(samldatawg)
+    assert isinstance(rolepairs, list)
+    assert len(rolepairs) == 7
     for pair in rolepairs:
         assert isinstance(pair, tuple)
         assert len(pair) == 2
