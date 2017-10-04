@@ -5,9 +5,9 @@ import sys
 import argparse
 from getpass import getpass
 from base64 import b64decode
-from nlmfedcred import fedcred
-from nlmfedcred.config import parse_config
-from nlmfedcred.idp import make_idp, DEFAULT_IDP
+from . import fedcred
+from .config import parse_config
+from .idp import make_idp, DEFAULT_IDP
 
 
 def parse_args(args):
@@ -38,29 +38,35 @@ def parse_args(args):
     return opts
 
 
-def output_bash(region, creds):
-    print('export AWS_DEFAULT_REGION="%s"' % region)
-    print('export AWS_ACCESS_KEY_ID="%s"' % creds.access_key)
-    print('export AWS_SECRET_ACCESS_KEY="%s"' % creds.secret_key)
-    print('export AWS_SESSION_TOKEN="%s"' % creds.session_token)
+def output_bash(region, creds, stream=sys.stdout):
+    stream.write('export AWS_DEFAULT_REGION="%s"\n' % region)
+    stream.write('export AWS_ACCESS_KEY_ID="%s"\n' % creds.access_key)
+    stream.write('export AWS_SECRET_ACCESS_KEY="%s"\n' % creds.secret_key)
+    stream.write('export AWS_SESSION_TOKEN="%s"\n' % creds.session_token)
 
 
-def output_cmd(region, creds):
-    print('@echo off')
-    print('set AWS_DEFAULT_REGION=%s' % region)
-    print('set AWS_ACCESS_KEY_ID=%s' % creds.access_key)
-    print('set AWS_SECRET_ACCESS_KEY=%s' % creds.secret_key)
-    print('set AWS_SESSION_TOKEN=%s' % creds.session_token)
+def output_cmd(region, creds, stream=sys.stdout):
+    stream.write('@echo off\r\n')
+    stream.write('set AWS_DEFAULT_REGION=%s\r\n' % region)
+    stream.write('set AWS_ACCESS_KEY_ID=%s\r\n' % creds.access_key)
+    stream.write('set AWS_SECRET_ACCESS_KEY=%s\r\n' % creds.secret_key)
+    stream.write('set AWS_SESSION_TOKEN=%s\r\n' % creds.session_token)
 
 
-def output_creds(shell, region, creds):
+def output_creds(shell, region, creds, stream=sys.stdout):
     if shell is None:
         if 'SHELL' in os.environ:
             shell = 'bash'
         else:
             shell = 'cmd'
     output_func = {'cmd': output_cmd, 'bash': output_bash}[shell]
-    output_func(region, creds)
+    output_func(region, creds, stream)
+
+
+def output_roles(authroles, stream=sys.stdout):
+    stream.write('\nAvailable roles below:\n')
+    for pair in authroles:
+        stream.write('  %s\n' % pair[1])
 
 
 def execute_from_command_line(args=None):
@@ -71,17 +77,13 @@ def execute_from_command_line(args=None):
 
     opts = parse_args(args[1:])
 
-    config = parse_config(opts.profile, opts.account, opts.role, opts.idp)
+    config = parse_config(opts.profile, opts.account, opts.role, opts.idp, opts.username)
     if config.idp is None:
         idp = DEFAULT_IDP
     else:
         idp = make_idp(config.idp)
 
-    if opts.username is None:
-        username = fedcred.get_user()
-    else:
-        username = opts.username
-
+    username = config.username
     if opts.password is not None:
         password = opts.password
     else:
@@ -113,28 +115,14 @@ def execute_from_command_line(args=None):
                 sys.stderr.write('No roles found')
             else:
                 sys.stderr.write('No roles match your criteria for account and role.\n')
-                sys.stderr.write('Available roles below:\n')
-                for pair in authroles:
-                    sys.stderr.write('  %s\n' % pair[1])
+                output_roles(authroles, sys.stderr)
         else:
             sys.stderr.write('No roles found\n')
         sys.exit(1)
     else:
-        while role is None:
-            print('')
-            for i in range(len(authroles)):
-                print('%i. %s' % (i+1, authroles[i][1]))
-            print('')
-            try:
-                i = int(getpass('Choose one of the previous roles: ')) - 1
-                if i >= 0 and i < len(authroles):
-                    principal = authroles[i][0]
-                    role = authroles[i][1]
-                else:
-                    raise ValueError()
-            except ValueError:
-                sys.stderr.write("That's not a valid choice\n")
-                pass
+        sys.stderr.write("Multiple potential roles found. Use --account or --role argument to limit to one.\n")
+        output_roles(authroles)
+        sys.exit(0)
 
     q = fedcred.assume_role_with_saml(role, principal, samlvalue, opts.region, opts.duration)
 
