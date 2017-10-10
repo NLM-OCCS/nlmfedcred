@@ -87,7 +87,7 @@ def get_role_pairs(samlvalue):
 def filter_role_pairs(pairs, account=None, name=None):
     arn_expr = ''
     if account is not None:
-        arn_expr += 'arn:aws:iam::{:012d}'.format(account)
+        arn_expr += 'arn:aws:iam::{:s}'.format(account)
     if name is not None:
         arn_expr += ':role/{:s}'.format(name)
 

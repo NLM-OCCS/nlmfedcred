@@ -128,6 +128,8 @@ def execute_from_command_line(args=None):
 
     if opts.output:
         os.umask(int('0077', 8))
-        sys.stdout = open(opts.output, 'w')
+        stream = open(opts.output, 'w')
+    else:
+        stream = sys.stdout
 
-    output_creds(opts.shell, opts.region, q.credentials)
+    output_creds(opts.shell, opts.region, q.credentials, stream)

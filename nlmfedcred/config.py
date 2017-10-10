@@ -23,17 +23,22 @@ def parse_config(profile, account, role, idp, username, inipath=None):
 
     if account is None:
         account = config.get(section, 'account', fallback=None)
-        if account is not None:
-            account = int(account)
+    if account is not None:
+        account = str(account)
 
     if role is None:
         role = config.get(section, 'role', fallback=None)
+    if role is not None:
+        role = str(role)
 
     if idp is None:
         idp = config.get(section, 'idp', fallback=None)
+    if idp is not None:
+        idp = str(idp)
 
     if username is None:
         username = config.get(section, 'username', fallback=get_user())
+        username = str(username)
 
     return Config(account, role, idp, username)
 
