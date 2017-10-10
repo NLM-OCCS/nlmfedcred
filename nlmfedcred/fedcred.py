@@ -9,38 +9,10 @@ import re
 import logging
 import requests
 
+from .config import get_home
+
 
 logger = logging.getLogger(__name__)
-
-
-def get_home():
-    '''
-    Get the home directory of the user in a way that should work in Linux, OS X, and Windows
-    '''
-    if 'HOME' in os.environ:
-        home_path = os.environ['HOME']
-    elif 'HOMEDRIVE' in os.environ and 'HOMEPATH' in os.environ:
-        home_path = os.environ['HOMEDRIVE'] + os.environ['HOMEPATH']
-    else:
-        home_path = None
-    return home_path
-
-
-def get_user():
-    '''
-    Get the current username in a way that should work in Linux, OS X, and Windows
-    '''
-    if 'USER' in os.environ:
-        # shell in Linux/OS X
-        username = os.environ['USER']
-    elif 'USERNAME' in os.environ:
-        # shell in Windows
-        username = os.environ['USERNAME']
-    else:
-        # crontab in Linux/OS X, may not work with setuid/setgid programs.
-        # We assume a login shell changes semantics; this is by design
-        username = os.getlogin()
-    return username
 
 
 def set_default_creds():
@@ -98,7 +70,7 @@ def get_role_pairs(samlvalue):
         'p': 'urn:oasis:names:tc:SAML:2.0:protocol',
         'a': 'urn:oasis:names:tc:SAML:2.0:assertion'
     }
-    tree = etree.fromstring(b64decode(samlvalue))
+    tree = etree.fromstring(b64decode(samlvalue), etree.XMLParser(resolve_entities=False))
     stmt = tree.xpath('/p:Response/a:Assertion/a:AttributeStatement', namespaces=namespaces)[0]
     pairs = []
     for a in stmt.xpath('a:Attribute', namespaces=namespaces):
@@ -115,7 +87,7 @@ def get_role_pairs(samlvalue):
 def filter_role_pairs(pairs, account=None, name=None):
     arn_expr = ''
     if account is not None:
-        arn_expr += 'arn:aws:iam::{:012d}'.format(account)
+        arn_expr += 'arn:aws:iam::{:s}'.format(account)
     if name is not None:
         arn_expr += ':role/{:s}'.format(name)
 
