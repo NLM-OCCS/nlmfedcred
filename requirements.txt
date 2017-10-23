@@ -1,7 +1,8 @@
 # run time
 pycrypto
 awscli
-boto
+boto3
+certifi
 bs4
 requests
 beautifulsoup4
