@@ -1,0 +1,4 @@
+include README.md
+include MANIFEST.in
+include VERSION.txt
+include nlmfedcred/certs/*.pem
