@@ -8,8 +8,12 @@ import boto3
 import re
 import logging
 import requests
+from collections import namedtuple
+
 
 from .config import get_home
+
+Credentials = namedtuple('Credentials', ['access_key', 'secret_key', 'session_token'])
 
 
 logger = logging.getLogger(__name__)
@@ -110,15 +114,19 @@ def get_filtered_role_pairs(samlvalue, account=None, name=None):
     return filter_role_pairs(get_role_pairs(samlvalue), account, name)
 
 
-def assume_role_with_saml(role_arn, principal_arn, samlvalue, region, duration=None, certpath=None):
+def make_creds_from_response(q):
+    assert q and 'Credentials' in q
+    raw = q['Credentials']
+    creds = Credentials(raw['AccessKeyId'], raw['SecretAccessKey'], raw['SessionToken'])
+    return creds
+
+
+def assume_role_with_saml(role_arn, principal_arn, samlvalue, region, duration=None):
     '''
     Use the SAML assertion to assume a role.
     '''
     set_default_creds()
-    if certpath is None:
-        client = boto3.client(service_name='sts', region_name=region)
-    else:
-        client = boto3.client(service_name='sts', region_name=region, verify=certpath)
+    client = boto3.client(service_name='sts', region_name=region)
     if duration is None:
         duration = 3600
 
@@ -126,5 +134,4 @@ def assume_role_with_saml(role_arn, principal_arn, samlvalue, region, duration=N
                                      PrincipalArn=principal_arn,
                                      SAMLAssertion=samlvalue,
                                      DurationSeconds=duration)
-    assert q
-    return q
+    return make_creds_from_response(q)

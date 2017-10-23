@@ -124,12 +124,11 @@ def execute_from_command_line(args=None):
         output_roles(authroles)
         sys.exit(0)
 
-    q = fedcred.assume_role_with_saml(role, principal, samlvalue, opts.region, opts.duration)
-
+    creds = fedcred.assume_role_with_saml(role, principal, samlvalue, opts.region, opts.duration)
     if opts.output:
         os.umask(int('0077', 8))
         stream = open(opts.output, 'w')
     else:
         stream = sys.stdout
 
-    output_creds(opts.shell, opts.region, q.credentials, stream)
+    output_creds(opts.shell, opts.region, creds, stream)
