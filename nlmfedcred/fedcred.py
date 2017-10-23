@@ -4,7 +4,7 @@ import os
 from bs4 import BeautifulSoup
 from lxml import etree
 from base64 import b64decode
-from boto import sts
+import boto3
 import re
 import logging
 import requests
@@ -110,19 +110,21 @@ def get_filtered_role_pairs(samlvalue, account=None, name=None):
     return filter_role_pairs(get_role_pairs(samlvalue), account, name)
 
 
-def assume_role_with_saml(role_arn, principal_arn, samlvalue, region, duration=None):
+def assume_role_with_saml(role_arn, principal_arn, samlvalue, region, duration=None, certpath=None):
     '''
     Use the SAML assertion to assume a role.
     '''
     set_default_creds()
-    sts_conn = sts.connect_to_region(region)
-
+    if certpath is None:
+        client = boto3.client(service_name='sts', region_name=region)
+    else:
+        client = boto3.client(service_name='sts', region_name=region, verify=certpath)
     if duration is None:
         duration = 3600
 
-    q = sts_conn.assume_role_with_saml(role_arn=role_arn,
-                                       principal_arn=principal_arn,
-                                       saml_assertion=samlvalue,
-                                       duration_seconds=duration)
+    q = client.assume_role_with_saml(RoleArn=role_arn,
+                                     PrincipalArn=principal_arn,
+                                     SAMLAssertion=samlvalue,
+                                     DurationSeconds=duration)
     assert q
     return q
