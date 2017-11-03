@@ -5,19 +5,28 @@ import certifi
 from io import StringIO
 import hashlib
 import shutil
+from .exceptions import CertificatesFileNotFound
+
 
 __all__ = ('Config', 'parse_config', 'get_user', 'get_home',)
 
 
-Config = namedtuple('Config', ('account', 'role', 'idp', 'username',))
+Config = namedtuple('Config', ('account', 'role', 'idp', 'username', 'ca_bundle',))
 
 
-def parse_config(profile, account, role, idp, username, inipath=None):
+def parse_config(profile, account, role, idp, username, ca_bundle=None, inipath=None):
+
+    defaults = None
+    awspath = get_aws_config_path()
+    if os.path.exists(awspath):
+        preconfig = ConfigParser()
+        preconfig.read(awspath)
+        defaults = preconfig['default']
 
     if inipath is None:
-        inipath = os.path.join(get_home(), '.getawscreds')
+        inipath = get_awscreds_config_path()
 
-    config = ConfigParser()
+    config = ConfigParser(defaults=defaults)
     config.read(inipath)
 
     if profile is not None and profile in config:
@@ -40,11 +49,16 @@ def parse_config(profile, account, role, idp, username, inipath=None):
     if idp is not None:
         idp = str(idp)
 
+    if ca_bundle is None:
+        ca_bundle = config.get(section, 'ca_bundle', fallback=None)
+    if ca_bundle is not None:
+        ca_bundle = str(ca_bundle)
+
     if username is None:
         username = config.get(section, 'username', fallback=get_user())
         username = str(username)
 
-    return Config(account, role, idp, username)
+    return Config(account, role, idp, username, ca_bundle)
 
 
 def get_user():
@@ -77,23 +91,28 @@ def get_home():
     return home_path
 
 
-def setup_certificates():
+def get_aws_config_path():
+    # This function exists to allow mocking during test plans
+    return os.path.join(get_home(), '.aws', 'config')
+
+
+def get_awscreds_config_path():
+    # THis function exists to allow mocking during test plans
+    return os.path.join(get_home(), '.getawscreds')
+
+
+def setup_certificates(bundle_path):
     """
     Copy the certificates in certifi package to our own name
     Append our SSL interceptors certificate to the set of certificates in certifi
     Define REQUESTS_CA_BUNDLE to point towards that.
     """
     certifi_bundle = certifi.where()
-    our_bundle = os.path.join(get_home(), '.getawscreds-cacert.pem')
-    if not os.path.exists(our_bundle):
-        # if our own copy does not exist, make a copy
-        shutil.copyfile(certifi_bundle, our_bundle)
-    elif os.stat(certifi_bundle).st_mtime > os.stat(our_bundle).st_mtime:
-        # if our own copy is older, make a copy
-        shutil.copyfile(certifi_bundle, our_bundle)
+    if not os.path.exists(certifi_bundle):
+        raise CertificatesFileNotFound()
+    shutil.copyfile(certifi_bundle, bundle_path)
     our_cert_data = nlmsecpalo_cert()
-    assure_cert_in_bundle(our_cert_data, our_bundle)
-    os.environ.setdefault('REQUESTS_CA_BUNDLE', our_bundle)
+    assure_cert_in_bundle(our_cert_data, bundle_path)
 
 
 def assure_cert_in_bundle(cert_data, bundle_path):

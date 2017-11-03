@@ -22,6 +22,10 @@ def parse_args(args):
                         help='Specify AWS region (default "us-east-1")')
     parser.add_argument('--output', '-o', metavar='PATH', default=None,
                         help='Path where the output should be written')
+    parser.add_argument('--ca-bundle', metavar='PATH', default=None,
+                        help='Path to multi-certificate PEM file used to validate SSL server certificates')
+    parser.add_argument('--setupcerts', metavar='PATH', default=None,
+                        help='Build a multi-certificate PEM bundle including certificate for NLM SSL interceptor')
     parser.add_argument('--samlout', '-s', metavar='PATH', default=None,
                         help='Debugging utility to save the SAML output')
     parser.add_argument('--shell', metavar='SHELL', default=None, choices=['bash', 'cmd'],
@@ -77,7 +81,12 @@ def execute_from_command_line(args=None):
 
     opts = parse_args(args[1:])
 
-    config = parse_config(opts.profile, opts.account, opts.role, opts.idp, opts.username)
+    if opts.setupcerts:
+        setup_certificates(opts.setupcerts)
+        print('Wrote certificate bundle to %s' % opts.setupcerts)
+        sys.exit(0)
+
+    config = parse_config(opts.profile, opts.account, opts.role, opts.idp, opts.username, ca_bundle=opts.ca_bundle)
     if config.idp is None:
         idp = DEFAULT_IDP
     else:
@@ -89,7 +98,8 @@ def execute_from_command_line(args=None):
     else:
         password = getpass('Enter Password: ')
 
-    setup_certificates()
+    if config.ca_bundle:
+        os.environ['REQUESTS_CA_BUNDLE'] = config.ca_bundle
 
     samlvalue = fedcred.get_saml_assertion(username, password, idp)
     if samlvalue == 'US-EN':

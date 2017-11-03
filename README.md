@@ -43,11 +43,28 @@ Here's an example:
 
 Here, the user is requesting a particular account number (NLM-QA) and a particular role.
 
+
+### SSL Interceptor
+
+Some of our systems sit behind a firewall/web proxy that acts as an SSL interceptor.   This allows it to decript the SSL traffic from an upstream web site, such as https://aws.amazon.com/, and analyze whether the content may be harmful.   However, the SSL interceptor then re-encrypts the content with its own certificate.  Python itself uses the Windows system certificates, which are stored in the registry, but libraries such as requests and urllib3 typically use certificates from the certifi python package.
+
+The following command-line builds a multi-certificate PEM file appending our own SSL interceptor pem certificate to the PEM bundle distributed by the certifi package, and stores it in a location of your choosing, I use the path %APPDATA%\awscerts.pem as an example:
+
+    getawscreds --setupcerts %APPDATA%\aws-certs-bundle.pem
+
+
+There after, you can use this bundle with both getawscreds and with the aws command-line itself:
+
+    getawscreds --cacerts %APPDATA%\aws-certs-bundle.pem -o awscreds.bat
+    awscreds.bat
+    aws --ca-bundle %APPDATA%\aws-certs-bundle.pem ec2 describe-region
+
 ### Configuration file and Profiles
 
 The program looks for an INI file called `$HOME/.getawscreds`, or if you are used to Windows environment variables, `%USERPROFILE%\\.getawscreds`.  This file allows a user to provide values for the following command-line options:
 
     username
+    cacerts
     account
     role
     idp
