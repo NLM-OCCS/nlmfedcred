@@ -6,7 +6,7 @@ import argparse
 from getpass import getpass
 from base64 import b64decode
 from . import fedcred
-from .config import parse_config
+from .config import parse_config, setup_certificates
 from .idp import make_idp, DEFAULT_IDP
 
 
@@ -22,6 +22,10 @@ def parse_args(args):
                         help='Specify AWS region (default "us-east-1")')
     parser.add_argument('--output', '-o', metavar='PATH', default=None,
                         help='Path where the output should be written')
+    parser.add_argument('--ca-bundle', metavar='PATH', default=None,
+                        help='Path to multi-certificate PEM file used to validate SSL server certificates')
+    parser.add_argument('--setupcerts', metavar='PATH', default=None,
+                        help='Build a multi-certificate PEM bundle including certificate for NLM SSL interceptor')
     parser.add_argument('--samlout', '-s', metavar='PATH', default=None,
                         help='Debugging utility to save the SAML output')
     parser.add_argument('--shell', metavar='SHELL', default=None, choices=['bash', 'cmd'],
@@ -77,7 +81,12 @@ def execute_from_command_line(args=None):
 
     opts = parse_args(args[1:])
 
-    config = parse_config(opts.profile, opts.account, opts.role, opts.idp, opts.username)
+    if opts.setupcerts:
+        setup_certificates(opts.setupcerts)
+        print('Wrote certificate bundle to %s' % opts.setupcerts)
+        return 0
+
+    config = parse_config(opts.profile, opts.account, opts.role, opts.idp, opts.username, ca_bundle=opts.ca_bundle)
     if config.idp is None:
         idp = DEFAULT_IDP
     else:
@@ -89,17 +98,20 @@ def execute_from_command_line(args=None):
     else:
         password = getpass('Enter Password: ')
 
+    if config.ca_bundle:
+        os.environ['REQUESTS_CA_BUNDLE'] = config.ca_bundle
+
     samlvalue = fedcred.get_saml_assertion(username, password, idp)
     if samlvalue == 'US-EN':
         sys.stderr.write('No SAML Binding: could it be an invalid password?\n')
-        sys.exit(1)
+        return 1
 
     if opts.samlout is not None:
         xmlvalue = b64decode(samlvalue)
         with open(opts.samlout, 'wb') as f:
             f.write(xmlvalue)
         print('Saml output saved without processing')
-        sys.exit(0)
+        return 0
 
     principal = None
     role = None
@@ -118,18 +130,18 @@ def execute_from_command_line(args=None):
                 output_roles(authroles, sys.stderr)
         else:
             sys.stderr.write('No roles found\n')
-        sys.exit(1)
+        return 1
     else:
         sys.stderr.write("Multiple potential roles found. Use --account or --role argument to limit to one.\n")
         output_roles(authroles)
         sys.exit(0)
 
-    q = fedcred.assume_role_with_saml(role, principal, samlvalue, opts.region, opts.duration)
-
+    creds = fedcred.assume_role_with_saml(role, principal, samlvalue, opts.region, opts.duration)
     if opts.output:
         os.umask(int('0077', 8))
         stream = open(opts.output, 'w')
     else:
         stream = sys.stdout
 
-    output_creds(opts.shell, opts.region, q.credentials, stream)
+    output_creds(opts.shell, opts.region, creds, stream)
+    return 0

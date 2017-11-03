@@ -23,3 +23,8 @@ def test_config():
     syms = dir(import_module('nlmfedcred.config'))
     assert 'parse_config' in syms
     assert 'Config' in syms
+
+
+def test_exceptions():
+    syms = dir(import_module('nlmfedcred.exceptions'))
+    assert len(syms) > 0

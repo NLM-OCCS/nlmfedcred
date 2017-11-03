@@ -1,19 +1,32 @@
 from configparser import ConfigParser
 from collections import namedtuple
 import os
+import certifi
+from io import StringIO
+import hashlib
+import shutil
+from .exceptions import CertificatesFileNotFound
+
 
 __all__ = ('Config', 'parse_config', 'get_user', 'get_home',)
 
 
-Config = namedtuple('Config', ('account', 'role', 'idp', 'username',))
+Config = namedtuple('Config', ('account', 'role', 'idp', 'username', 'ca_bundle',))
 
 
-def parse_config(profile, account, role, idp, username, inipath=None):
+def parse_config(profile, account, role, idp, username, ca_bundle=None, inipath=None):
+
+    defaults = None
+    awspath = get_aws_config_path()
+    if os.path.exists(awspath):
+        preconfig = ConfigParser()
+        preconfig.read(awspath)
+        defaults = preconfig['default']
 
     if inipath is None:
-        inipath = os.path.join(os.path.expanduser('~'), '.getawscreds')
+        inipath = get_awscreds_config_path()
 
-    config = ConfigParser()
+    config = ConfigParser(defaults=defaults)
     config.read(inipath)
 
     if profile is not None and profile in config:
@@ -36,11 +49,16 @@ def parse_config(profile, account, role, idp, username, inipath=None):
     if idp is not None:
         idp = str(idp)
 
+    if ca_bundle is None:
+        ca_bundle = config.get(section, 'ca_bundle', fallback=None)
+    if ca_bundle is not None:
+        ca_bundle = str(ca_bundle)
+
     if username is None:
         username = config.get(section, 'username', fallback=get_user())
         username = str(username)
 
-    return Config(account, role, idp, username)
+    return Config(account, role, idp, username, ca_bundle)
 
 
 def get_user():
@@ -69,5 +87,64 @@ def get_home():
     elif 'HOMEDRIVE' in os.environ and 'HOMEPATH' in os.environ:
         home_path = os.environ['HOMEDRIVE'] + os.environ['HOMEPATH']
     else:
-        home_path = None
+        home_path = os.path.expanduser('~')
     return home_path
+
+
+def get_aws_config_path():
+    # This function exists to allow mocking during test plans
+    return os.path.join(get_home(), '.aws', 'config')
+
+
+def get_awscreds_config_path():
+    # THis function exists to allow mocking during test plans
+    return os.path.join(get_home(), '.getawscreds')
+
+
+def setup_certificates(bundle_path):
+    """
+    Copy the certificates in certifi package to our own name
+    Append our SSL interceptors certificate to the set of certificates in certifi
+    Define REQUESTS_CA_BUNDLE to point towards that.
+    """
+    certifi_bundle = certifi.where()
+    if not os.path.exists(certifi_bundle):
+        raise CertificatesFileNotFound()
+    shutil.copyfile(certifi_bundle, bundle_path)
+    our_cert_data = nlmsecpalo_cert()
+    assure_cert_in_bundle(our_cert_data, bundle_path)
+
+
+def assure_cert_in_bundle(cert_data, bundle_path):
+    if not certsfile_hascert(bundle_path, cert_data):
+        with open(bundle_path, 'a') as f:
+            f.write(cert_data)
+
+
+def checksum(certdata):
+    return hashlib.md5(certdata.encode('ascii')).hexdigest()
+
+
+def certsfile_hascert(path, certdata):
+    oursum = checksum(certdata)
+    matching_certs = list(filter(lambda c: c == oursum, map(checksum, enum_certs(path))))
+    return len(matching_certs) > 0
+
+
+def nlmsecpalo_cert():
+    with open(os.path.join(os.path.dirname(__file__), 'certs/nlmsecpalo.pem'), 'r') as cert_file:
+        return cert_file.read()
+
+
+def enum_certs(path):
+    with open(path, 'r') as cert_file:
+        buf = StringIO()
+        for line in cert_file:
+            s = line.rstrip()
+            if s == '-----BEGIN CERTIFICATE-----':
+                buf = StringIO()
+            buf.write(line)
+            if s == '-----END CERTIFICATE-----':
+                certificate = buf.getvalue()
+                buf = StringIO()
+                yield certificate
