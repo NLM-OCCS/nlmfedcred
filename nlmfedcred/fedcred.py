@@ -4,12 +4,16 @@ import os
 from bs4 import BeautifulSoup
 from lxml import etree
 from base64 import b64decode
-from boto import sts
+import boto3
 import re
 import logging
 import requests
+from collections import namedtuple
+
 
 from .config import get_home
+
+Credentials = namedtuple('Credentials', ['access_key', 'secret_key', 'session_token'])
 
 
 logger = logging.getLogger(__name__)
@@ -110,19 +114,24 @@ def get_filtered_role_pairs(samlvalue, account=None, name=None):
     return filter_role_pairs(get_role_pairs(samlvalue), account, name)
 
 
+def make_creds_from_response(q):
+    assert q and 'Credentials' in q
+    raw = q['Credentials']
+    creds = Credentials(raw['AccessKeyId'], raw['SecretAccessKey'], raw['SessionToken'])
+    return creds
+
+
 def assume_role_with_saml(role_arn, principal_arn, samlvalue, region, duration=None):
     '''
     Use the SAML assertion to assume a role.
     '''
     set_default_creds()
-    sts_conn = sts.connect_to_region(region)
-
+    client = boto3.client(service_name='sts', region_name=region)
     if duration is None:
         duration = 3600
 
-    q = sts_conn.assume_role_with_saml(role_arn=role_arn,
-                                       principal_arn=principal_arn,
-                                       saml_assertion=samlvalue,
-                                       duration_seconds=duration)
-    assert q
-    return q
+    q = client.assume_role_with_saml(RoleArn=role_arn,
+                                     PrincipalArn=principal_arn,
+                                     SAMLAssertion=samlvalue,
+                                     DurationSeconds=duration)
+    return make_creds_from_response(q)

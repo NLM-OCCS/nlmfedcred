@@ -1,26 +1,10 @@
 """
 Test that filtering functions find correct principals and roles
 """
-import os
-import pytest
 from nlmfedcred import fedcred
 from base64 import b64decode
 
-DATA_DIR = os.path.join(os.path.dirname(__file__), 'data')
-
-
-@pytest.fixture(scope='module')
-def samldata():
-    samlout_path = os.path.join(DATA_DIR, 'samlout.b64')
-    with open(samlout_path, 'rb') as f:
-        return f.read()
-
-
-@pytest.fixture(scope='module')
-def samldatawg():
-    samlout_path = os.path.join(DATA_DIR, 'samlout-wg.b64')
-    with open(samlout_path, 'rb') as f:
-        return f.read()
+from .fixtures import *             # noqa # pylint: disable=unused-import
 
 
 def test_data_decodes(samldata):
