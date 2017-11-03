@@ -43,6 +43,39 @@ Here's an example:
 
 Here, the user is requesting a particular account number (NLM-QA) and a particular role.
 
+### Configuration file and Profiles
+
+The program looks for an INI file called `$HOME/.getawscreds`, or if you are used to Windows environment variables, `%USERPROFILE%\\.getawscreds`.  This file allows a user to provide values for the following command-line options:
+
+    username
+    account
+    role
+    idp
+
+The defaults go in a seciton called `[DEFAULTS]`, and each additional section becomes a named profile you can use with the `--profile` or `-p` command-line flag.   The configuration file is typically used to provide names and federated login points for different accounts, but can also be used to provide specific roles.   A typical configuration for NLM's own environment is as follows:
+
+    [DEFAULT]
+    role = nlm_aws_users
+
+    [NLM-INT]
+    idp = authtest.nih.gov
+    account = 758297805533
+
+    [NLM-WG]
+    idp = authtest.nih.gov
+    account = 765460880451
+
+    [NLM-PROD]
+    idp = auth.nih.gov
+    account = 070163433501
+
+    [NLM-QA]
+    idp = auth.nih.gov
+    account = 491634416615
+
+    [NLM-SEC]
+    idp = auth.nih.gov
+    account = 867452570402
 
 ### Region
 
@@ -61,7 +94,7 @@ The following diagnostic flags exist:
 * You can test that the shell output switching is working using the `--shell` argument.
 * You can get a copy of the SAML Binding document returned by authtest.nih.gov using the `--samlout` argument.
 
-## Development 
+## Development
 
 - Building
     * Update the `VERSION.txt` and run `./setup.py bdist_wheel`

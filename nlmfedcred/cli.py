@@ -6,7 +6,7 @@ import argparse
 from getpass import getpass
 from base64 import b64decode
 from . import fedcred
-from .config import parse_config
+from .config import parse_config, setup_certificates
 from .idp import make_idp, DEFAULT_IDP
 
 
@@ -88,6 +88,8 @@ def execute_from_command_line(args=None):
         password = opts.password
     else:
         password = getpass('Enter Password: ')
+
+    setup_certificates()
 
     samlvalue = fedcred.get_saml_assertion(username, password, idp)
     if samlvalue == 'US-EN':

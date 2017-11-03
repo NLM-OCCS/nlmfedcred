@@ -77,7 +77,12 @@ def get_home():
     return home_path
 
 
-def setup_certs():
+def setup_certificates():
+    """
+    Copy the certificates in certifi package to our own name
+    Append our SSL interceptors certificate to the set of certificates in certifi
+    Define REQUESTS_CA_BUNDLE to point towards that.
+    """
     certifi_bundle = certifi.where()
     our_bundle = os.path.join(get_home(), '.getawscreds-cacert.pem')
     if not os.path.exists(our_bundle):
