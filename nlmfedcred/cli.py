@@ -84,7 +84,7 @@ def execute_from_command_line(args=None):
     if opts.setupcerts:
         setup_certificates(opts.setupcerts)
         print('Wrote certificate bundle to %s' % opts.setupcerts)
-        sys.exit(0)
+        return 0
 
     config = parse_config(opts.profile, opts.account, opts.role, opts.idp, opts.username, ca_bundle=opts.ca_bundle)
     if config.idp is None:
@@ -104,14 +104,14 @@ def execute_from_command_line(args=None):
     samlvalue = fedcred.get_saml_assertion(username, password, idp)
     if samlvalue == 'US-EN':
         sys.stderr.write('No SAML Binding: could it be an invalid password?\n')
-        sys.exit(1)
+        return 1
 
     if opts.samlout is not None:
         xmlvalue = b64decode(samlvalue)
         with open(opts.samlout, 'wb') as f:
             f.write(xmlvalue)
         print('Saml output saved without processing')
-        sys.exit(0)
+        return 0
 
     principal = None
     role = None
@@ -130,7 +130,7 @@ def execute_from_command_line(args=None):
                 output_roles(authroles, sys.stderr)
         else:
             sys.stderr.write('No roles found\n')
-        sys.exit(1)
+        return 1
     else:
         sys.stderr.write("Multiple potential roles found. Use --account or --role argument to limit to one.\n")
         output_roles(authroles)
@@ -144,3 +144,4 @@ def execute_from_command_line(args=None):
         stream = sys.stdout
 
     output_creds(opts.shell, opts.region, creds, stream)
+    return 0

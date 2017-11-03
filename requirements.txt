@@ -12,3 +12,4 @@ lxml
 pytest
 pytest-cov
 pytest-pythonpath
+pytest-mock
