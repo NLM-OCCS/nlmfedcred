@@ -23,7 +23,7 @@ setup(
     packages=find_packages(),
     include_package_data=True,
     scripts=['bin/getawscreds.py'],
-    install_requires=['awscli', 'boto', 'bs4', 'requests', 'beautifulsoup4', 'lxml'],
+    install_requires=['awscli', 'boto3', 'bs4', 'requests', 'beautifulsoup4', 'lxml'],
     tests_require=['pytest', 'tox'],
     entry_points= {'console_scripts': [
         'getawscreds = nlmfedcred.cli:execute_from_command_line',
