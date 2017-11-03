@@ -1,6 +1,5 @@
 #!/usr/bin/env python
 import os
-import subprocess
 
 from setuptools import setup, find_packages
 
@@ -25,7 +24,7 @@ setup(
     scripts=['bin/getawscreds.py'],
     install_requires=['awscli', 'boto3', 'bs4', 'requests', 'beautifulsoup4', 'lxml'],
     tests_require=['pytest', 'tox'],
-    entry_points= {'console_scripts': [
+    entry_points={'console_scripts': [
         'getawscreds = nlmfedcred.cli:execute_from_command_line',
     ]},
     classifiers=[
@@ -44,4 +43,3 @@ setup(
         'Topic :: Utilities',
     ],
 )
-
