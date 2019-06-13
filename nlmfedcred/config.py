@@ -8,7 +8,15 @@ import shutil
 from .exceptions import CertificatesFileNotFound
 
 
-__all__ = ('Config', 'parse_config', 'get_user', 'get_home',)
+__all__ = (
+    'Config',
+    'parse_config',
+    'get_user',
+    'get_home',
+    'get_aws_config_path',
+    'get_aws_credentials_path',
+    'update_aws_credentials',
+)
 
 
 Config = namedtuple('Config', ('account', 'role', 'idp', 'username', 'ca_bundle',))
@@ -96,6 +104,11 @@ def get_aws_config_path():
     return os.path.join(get_home(), '.aws', 'config')
 
 
+def get_aws_credentials_path():
+    # This function exists to allow mocking during test plans
+    return os.path.join(get_home(), '.aws', 'credentials')
+
+
 def get_awscreds_config_path():
     # THis function exists to allow mocking during test plans
     return os.path.join(get_home(), '.getawscreds')
@@ -148,3 +161,18 @@ def enum_certs(path):
                 certificate = buf.getvalue()
                 buf = StringIO()
                 yield certificate
+
+def update_aws_credentials(region, creds, profile='getawscreds', path=None):
+    config = ConfigParser()
+    if not path:
+        path = get_aws_credentials_path()
+    config.read(path)
+    config.remove_section(profile)
+    config.add_section(profile)
+    config.set(profile, 'region', region)
+    config.set(profile, 'aws_access_key_id', creds.access_key)
+    config.set(profile, 'aws_secret_access_key', creds.secret_key)
+    config.set(profile, 'aws_session_token', creds.session_token)
+    print('Updating profile "%s" in ~/.aws/credentials' % profile)
+    with open(path, 'w') as fp:
+        config.write(fp)

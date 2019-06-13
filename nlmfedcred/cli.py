@@ -6,7 +6,7 @@ import argparse
 from getpass import getpass
 from base64 import b64decode
 from . import fedcred
-from .config import parse_config, setup_certificates
+from .config import parse_config, setup_certificates, update_aws_credentials
 from .idp import make_idp, DEFAULT_IDP
 
 
@@ -137,11 +137,13 @@ def execute_from_command_line(args=None):
         sys.exit(0)
 
     creds = fedcred.assume_role_with_saml(role, principal, samlvalue, opts.region, opts.duration)
-    if opts.output:
-        os.umask(int('0077', 8))
-        stream = open(opts.output, 'w')
+    if opts.shell:
+        if opts.output:
+            os.umask(int('0077', 8))
+            stream = open(opts.output, 'w')
+        else:
+            stream = sys.stdout
+        output_creds(opts.shell, opts.region, creds, stream)
     else:
-        stream = sys.stdout
-
-    output_creds(opts.shell, opts.region, creds, stream)
+        update_aws_credentials(opts.region, creds, opts.profile, opts.output)
     return 0
