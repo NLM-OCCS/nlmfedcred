@@ -1,5 +1,5 @@
 #!/usr/bin/env python
-from __future__ import print_function, unicode_literals
+from __future__ import print_function, unicode_literals, absolute_import
 import os
 import sys
 import argparse
@@ -134,7 +134,7 @@ def execute_from_command_line(args=None):
     else:
         sys.stderr.write("Multiple potential roles found. Use --account or --role argument to limit to one.\n")
         output_roles(authroles)
-        sys.exit(0)
+        return 1
 
     creds = fedcred.assume_role_with_saml(role, principal, samlvalue, opts.region, opts.duration)
     if opts.shell:
@@ -145,5 +145,6 @@ def execute_from_command_line(args=None):
             stream = sys.stdout
         output_creds(opts.shell, opts.region, creds, stream)
     else:
-        update_aws_credentials(opts.region, creds, opts.profile, opts.output)
+        profile = opts.profile if opts.profile else 'default'
+        update_aws_credentials(opts.region, creds, profile, opts.output)
     return 0

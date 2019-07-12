@@ -1,5 +1,5 @@
 import os
-from nlmfedcred.cli import execute_from_command_line
+from nlmfedcred.cli import execute_from_command_line, output_creds
 from nlmfedcred.idp import DEFAULT_IDP
 from nlmfedcred.fedcred import Credentials
 
@@ -66,7 +66,7 @@ def test_bad_password(mocker):
     assert 'invalid password' in write_error.call_args[0][0]
 
 
-def test_normal_flow(tmpdir, mocker, samldata):
+def test_bash_out(tmpdir, mocker, samldata):
     output_file = str(tmpdir.join('awscreds.sh'))
     if os.path.exists(output_file):
         os.path.remove(output_file)
@@ -74,7 +74,8 @@ def test_normal_flow(tmpdir, mocker, samldata):
         'dummy',
         '--output', output_file,
         '--shell', 'bash',
-        '--account', '070163433501'
+        '--account', '070163433501',
+        '--role', 'nlm_aws_users',
     ]
     getpass = mocker.patch('nlmfedcred.cli.getpass', return_value='fake password')
     make_idp = mocker.patch('nlmfedcred.cli.make_idp', return_value=DEFAULT_IDP)
@@ -83,6 +84,8 @@ def test_normal_flow(tmpdir, mocker, samldata):
     expected_credentials = Credentials(access_key='7777', secret_key='8888', session_token='9999')
     assume_role = mocker.patch('nlmfedcred.cli.fedcred.assume_role_with_saml', return_value=expected_credentials)
     write_error = mocker.patch('nlmfedcred.cli.sys.stderr.write', return_value=0)
+    output_creds_mm = mocker.patch('nlmfedcred.cli.output_creds', wraps=output_creds)
+    save_creds = mocker.patch('nlmfedcred.config.update_aws_credentials', return_value=0)
 
     rc = execute_from_command_line(args)
 
@@ -92,3 +95,5 @@ def test_normal_flow(tmpdir, mocker, samldata):
     assert get_saml_assertion.call_count == 1
     assert write_error.call_count == 0
     assert assume_role.call_count == 1
+    assert output_creds_mm.call_count == 1
+    assert save_creds.call_count == 0

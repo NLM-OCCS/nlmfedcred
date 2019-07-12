@@ -6,6 +6,10 @@ function awscreds () {
         return 1
     fi
 
+    if [[ ! -d "$HOME/.aws" ]]; then
+        mkdir "$HOME/.aws"
+    fi
+
     getawscreds --shell=bash -p $1 -o $AWSCREDS
     if [[ $? -ne 0 ]]; then
         return 1

@@ -162,11 +162,15 @@ def enum_certs(path):
                 buf = StringIO()
                 yield certificate
 
-def update_aws_credentials(region, creds, profile='getawscreds', path=None):
+def update_aws_credentials(region, creds, profile='default', path=None):
     config = ConfigParser()
     if not path:
         path = get_aws_credentials_path()
-    config.read(path)
+    dirname = os.path.dirname(path);
+    if os.path.isdir(dirname):
+        config.read(path)
+    else:
+        os.mkdir(dirname)
     config.remove_section(profile)
     config.add_section(profile)
     config.set(profile, 'region', region)

@@ -1,6 +1,4 @@
 # run time
-pycrypto
-awscli
 boto3
 certifi
 bs4
