@@ -41,7 +41,7 @@ setup(
     packages=find_packages(),
     include_package_data=True,
     scripts=['bin/getawscreds.py', 'bin/awscreds.cmd', 'bin/awscreds-func.sh'],
-    install_requires=['awscli', 'boto3', 'bs4', 'requests', 'beautifulsoup4', 'lxml'],
+    install_requires=['boto3', 'bs4', 'requests', 'beautifulsoup4', 'lxml'],
     tests_require=['pytest', 'tox'],
     cmdclass={
         'purge': PurgeCommand,
