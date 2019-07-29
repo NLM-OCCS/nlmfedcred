@@ -1,10 +1,18 @@
-import os
 from nlmfedcred.cli import execute_from_command_line, output_creds
 from nlmfedcred.idp import DEFAULT_IDP
 from nlmfedcred.fedcred import Credentials
 
 from .fixtures import *
 
+SBOX_MLB_CONFIG = """# awscreds config
+[DEFAULT]
+account = 070163433501
+role = nlm_aws_users
+username = markfu
+
+[sbox-mlb]
+idp = auth7.nih.gov
+"""
 
 def test_setup_certs(tmpdir):
     testbundle = str(tmpdir.join('test-bundle.pem'))
@@ -85,7 +93,7 @@ def test_bash_out(tmpdir, mocker, samldata):
     assume_role = mocker.patch('nlmfedcred.cli.fedcred.assume_role_with_saml', return_value=expected_credentials)
     write_error = mocker.patch('nlmfedcred.cli.sys.stderr.write', return_value=0)
     output_creds_mm = mocker.patch('nlmfedcred.cli.output_creds', wraps=output_creds)
-    save_creds = mocker.patch('nlmfedcred.config.update_aws_credentials', return_value=0)
+    save_creds = mocker.patch('nlmfedcred.cli.update_aws_credentials', return_value=0)
 
     rc = execute_from_command_line(args)
 
@@ -97,3 +105,72 @@ def test_bash_out(tmpdir, mocker, samldata):
     assert assume_role.call_count == 1
     assert output_creds_mm.call_count == 1
     assert save_creds.call_count == 0
+
+
+def test_named_profile(tmpdir, mocker, samldata):
+    args = [
+        'dummy',
+        '--profile',
+        'sbox-mlb'
+    ]
+
+    # build temporary configuration file
+    inipath = tmpdir.join('config.ini')
+    inipath.write(SBOX_MLB_CONFIG)
+    getpass = mocker.patch('nlmfedcred.cli.getpass', return_value='fake-password')
+    make_idp = mocker.patch('nlmfedcred.cli.make_idp', return_value=DEFAULT_IDP)
+    get_saml_assertion = mocker.patch('nlmfedcred.cli.fedcred.get_saml_assertion', return_value=samldata)
+
+    expected_credentials = Credentials(access_key='7777', secret_key='8888', session_token='9999')
+
+    assume_role = mocker.patch('nlmfedcred.cli.fedcred.assume_role_with_saml', return_value=expected_credentials)
+    write_error = mocker.patch('nlmfedcred.cli.sys.stderr.write', return_value=0)
+    get_awscreds_config_path = mocker.patch('nlmfedcred.config.get_awscreds_config_path', return_value=inipath)
+    output_creds_mm = mocker.patch('nlmfedcred.cli.output_creds', wraps=output_creds)
+    save_creds = mocker.patch('nlmfedcred.cli.update_aws_credentials', return_value=0)
+
+    rc = execute_from_command_line(args)
+
+    assert rc == 0
+    assert get_awscreds_config_path.call_count == 1
+    assert getpass.call_count == 1
+    assert make_idp.call_count == 1
+    assert get_saml_assertion.call_count == 1
+    assert write_error.call_count == 0
+    assert assume_role.call_count == 1
+    assert output_creds_mm.call_count == 0
+    assert save_creds.called_once_with('us-east-1', expected_credentials, 'sbox-mlb', None)
+
+
+def test_default_profile(tmpdir, mocker, samldata):
+    args = [
+        'dummy',
+        '--profile',
+    ]
+
+    # build temporary configuration file
+    inipath = tmpdir.join('config.ini')
+    inipath.write(SBOX_MLB_CONFIG)
+    getpass = mocker.patch('nlmfedcred.cli.getpass', return_value='fake-password')
+    make_idp = mocker.patch('nlmfedcred.cli.make_idp', return_value=DEFAULT_IDP)
+    get_saml_assertion = mocker.patch('nlmfedcred.cli.fedcred.get_saml_assertion', return_value=samldata)
+
+    expected_credentials = Credentials(access_key='7777', secret_key='8888', session_token='9999')
+
+    assume_role = mocker.patch('nlmfedcred.cli.fedcred.assume_role_with_saml', return_value=expected_credentials)
+    write_error = mocker.patch('nlmfedcred.cli.sys.stderr.write', return_value=0)
+    get_awscreds_config_path = mocker.patch('nlmfedcred.config.get_awscreds_config_path', return_value=inipath)
+    output_creds_mm = mocker.patch('nlmfedcred.cli.output_creds', wraps=output_creds)
+    save_creds = mocker.patch('nlmfedcred.cli.update_aws_credentials', return_value=0)
+
+    rc = execute_from_command_line(args)
+
+    assert rc == 0
+    assert get_awscreds_config_path.call_count == 1
+    assert getpass.call_count == 1
+    assert make_idp.call_count == 0
+    assert get_saml_assertion.call_count == 1
+    assert write_error.call_count == 0
+    assert assume_role.call_count == 1
+    assert output_creds_mm.call_count == 0
+    assert save_creds.called_once_with('us-east-1', expected_credentials, 'default', None)

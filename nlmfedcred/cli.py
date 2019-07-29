@@ -9,7 +9,6 @@ from . import fedcred
 from .config import parse_config, setup_certificates, update_aws_credentials
 from .idp import make_idp, DEFAULT_IDP
 
-
 def parse_args(args):
     parser = argparse.ArgumentParser(prog="getawscreds", description='Output shell variables for an AWS role')
     parser.add_argument('--username', '-u', metavar='USERNAME', type=str, default=None,
@@ -33,6 +32,7 @@ def parse_args(args):
     parser.add_argument('--account', '-a', metavar='ACCOUNT', default=None,
                         help='Account number filters possible roles by account number match')
     parser.add_argument('--profile', '-p', metavar='NAME', default=None,
+                        nargs='?', const=os.environ.get('AWS_DEFAULT_PROFILE', 'default'),
                         help='Specifies a section of $HOME/.getawscreds to use for your configuration')
     parser.add_argument('--idp', metavar='FQDN', default=None,
                         help='Specify FQDN to use when making federation calls')
@@ -100,6 +100,12 @@ def execute_from_command_line(args=None):
 
     if config.ca_bundle:
         os.environ['REQUESTS_CA_BUNDLE'] = config.ca_bundle
+
+    # If there is an AWS_DEFAULT_PROFILE, it could mess stuff up
+    try:
+        del os.environ['AWS_DEFAULT_PROFILE']
+    except KeyError:
+        pass
 
     samlvalue = fedcred.get_saml_assertion(username, password, idp)
     if samlvalue == 'US-EN':
