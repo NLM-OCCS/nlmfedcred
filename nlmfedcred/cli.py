@@ -1,14 +1,13 @@
 #!/usr/bin/env python
-from __future__ import print_function, unicode_literals
+from __future__ import print_function, unicode_literals, absolute_import
 import os
 import sys
 import argparse
 from getpass import getpass
 from base64 import b64decode
 from . import fedcred
-from .config import parse_config, setup_certificates
+from .config import parse_config, setup_certificates, update_aws_credentials
 from .idp import make_idp, DEFAULT_IDP
-
 
 def parse_args(args):
     parser = argparse.ArgumentParser(prog="getawscreds", description='Output shell variables for an AWS role')
@@ -33,6 +32,7 @@ def parse_args(args):
     parser.add_argument('--account', '-a', metavar='ACCOUNT', default=None,
                         help='Account number filters possible roles by account number match')
     parser.add_argument('--profile', '-p', metavar='NAME', default=None,
+                        nargs='?', const=os.environ.get('AWS_DEFAULT_PROFILE', 'default'),
                         help='Specifies a section of $HOME/.getawscreds to use for your configuration')
     parser.add_argument('--idp', metavar='FQDN', default=None,
                         help='Specify FQDN to use when making federation calls')
@@ -101,6 +101,12 @@ def execute_from_command_line(args=None):
     if config.ca_bundle:
         os.environ['REQUESTS_CA_BUNDLE'] = config.ca_bundle
 
+    # If there is an AWS_DEFAULT_PROFILE, it could mess stuff up
+    try:
+        del os.environ['AWS_DEFAULT_PROFILE']
+    except KeyError:
+        pass
+
     samlvalue = fedcred.get_saml_assertion(username, password, idp)
     if samlvalue == 'US-EN':
         sys.stderr.write('No SAML Binding: could it be an invalid password?\n')
@@ -134,14 +140,17 @@ def execute_from_command_line(args=None):
     else:
         sys.stderr.write("Multiple potential roles found. Use --account or --role argument to limit to one.\n")
         output_roles(authroles)
-        sys.exit(0)
+        return 1
 
     creds = fedcred.assume_role_with_saml(role, principal, samlvalue, opts.region, opts.duration)
-    if opts.output:
-        os.umask(int('0077', 8))
-        stream = open(opts.output, 'w')
+    if opts.shell:
+        if opts.output:
+            os.umask(int('0077', 8))
+            stream = open(opts.output, 'w')
+        else:
+            stream = sys.stdout
+        output_creds(opts.shell, opts.region, creds, stream)
     else:
-        stream = sys.stdout
-
-    output_creds(opts.shell, opts.region, creds, stream)
+        profile = opts.profile if opts.profile else 'default'
+        update_aws_credentials(opts.region, creds, profile, opts.output)
     return 0
