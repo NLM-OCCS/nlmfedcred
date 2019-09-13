@@ -60,6 +60,13 @@ def test_filter_on_account_role_exact(samldata_sysop):
     assert role.endswith(':role/nlm_aws_sysops')
 
 
+def test_filter_on_role_without_prefix(samldata_sysop):
+    rolepairs = fedcred.get_filtered_role_pairs(samldata_sysop, name='sysops_super')
+    assert len(rolepairs) == 1
+    role = rolepairs[0][1]
+    assert role.endswith(':role/nlm_aws_sysops_super')
+
+
 def test_filter_on_account_role(samldata):
     rolepairs = fedcred.get_filtered_role_pairs(samldata, account='070163433501', name='nlm_aws_admins')
     assert len(rolepairs) == 1
