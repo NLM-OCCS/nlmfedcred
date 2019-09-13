@@ -1,8 +1,11 @@
 """
 Test ability to parse configuration files
 """
-from nlmfedcred.config import parse_config, get_user, get_home, setup_certificates
 import os
+import pytest
+
+from nlmfedcred.exceptions import ProfileNotFound
+from nlmfedcred.config import parse_config, get_user, get_home, setup_certificates
 
 from . import restore_env, setup_awsconfig
 
@@ -156,12 +159,12 @@ def test_realistic(tmpdir):
     assert c.idp == 'auth8.nih.gov'
     assert c.username == 'markfu'
 
-    # Test what happens if the section is not found
-    c = parse_config('NLM-PROD', None, None, None, None, inipath=str(inipath))
-    assert c.account is None
-    assert c.role == 'nlm_aws_users'
-    assert c.idp is None
-    assert c.username == 'markfu'
+
+def test_realistic_profilenotfound(tmpdir):
+    inipath = tmpdir.join('config.ini')
+    inipath.write(REALISTIC_CONFIG)
+    with pytest.raises(ProfileNotFound):
+        parse_config('nosuchprofile', None, None, None, None, inipath=str(inipath))
 
 
 def test_default_inipath(tmpdir, mocker):
@@ -183,7 +186,7 @@ def test_ca_bundle_none_none(tmpdir, mocker):
         os.remove(awsconfig)
 
     with mocker.patch('nlmfedcred.config.get_aws_config_path', return_value=awsconfig):
-        c = parse_config('NLM-QA', None, None, None, None, ca_bundle=None)      # being explicit
+        c = parse_config('default', None, None, None, None, ca_bundle=None)      # being explicit
         assert c.ca_bundle is None
 
 
@@ -192,7 +195,7 @@ def test_ca_bundle_takes_aws_over_none(tmpdir, mocker):
     awsconfig = setup_awsconfig(tmpdir, mockbundle)
 
     with mocker.patch('nlmfedcred.config.get_aws_config_path', return_value=awsconfig):
-        c = parse_config('NLM-QA', None, None, None, None)
+        c = parse_config('default', None, None, None, None)
         assert c.ca_bundle == mockbundle
 
 
@@ -201,7 +204,7 @@ def test_ca_bundle_takes_provided_over_aws(tmpdir, mocker):
     awsconfig = setup_awsconfig(tmpdir, mockbundle)
 
     with mocker.patch('nlmfedcred.config.get_aws_config_path', return_value=awsconfig):
-        c = parse_config('NLM-QA', None, None, None, None, ca_bundle='override-bundle')
+        c = parse_config('default', None, None, None, None, ca_bundle='override-bundle')
         assert c.ca_bundle == 'override-bundle'
 
 

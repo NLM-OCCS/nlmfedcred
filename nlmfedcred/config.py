@@ -5,7 +5,7 @@ import certifi
 from io import StringIO
 import hashlib
 import shutil
-from .exceptions import CertificatesFileNotFound
+from .exceptions import CertificatesFileNotFound, ProfileNotFound
 
 
 __all__ = (
@@ -39,8 +39,10 @@ def parse_config(profile, account, role, idp, username, ca_bundle=None, inipath=
 
     if profile is not None and profile in config:
         section = profile
-    else:
+    elif profile is None or profile == 'default':
         section = 'DEFAULT'
+    else:
+        raise ProfileNotFound()
 
     if account is None:
         account = config.get(section, 'account', fallback=None)
