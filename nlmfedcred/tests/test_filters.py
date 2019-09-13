@@ -22,8 +22,8 @@ def test_finds_all_roles(samldata):
         assert len(pair) == 2
 
 
-def test_finds_all_roles_in_wg(samldatawg):
-    rolepairs = fedcred.get_role_pairs(samldatawg)
+def test_finds_all_roles_in_wg(samldata_wg):
+    rolepairs = fedcred.get_role_pairs(samldata_wg)
     assert isinstance(rolepairs, list)
     assert len(rolepairs) == 7
     for pair in rolepairs:
@@ -51,6 +51,13 @@ def test_filter_on_role(samldata):
     justroles = [p[1] for p in rolepairs]
     for role in justroles:
         role.endswith(':role/nlm_aws_admins')
+
+
+def test_filter_on_account_role_exact(samldata_sysop):
+    rolepairs = fedcred.get_filtered_role_pairs(samldata_sysop, account='626642342379', name='nlm_aws_sysops')
+    assert len(rolepairs) == 1
+    role = rolepairs[0][1]
+    assert role.endswith(':role/nlm_aws_sysops')
 
 
 def test_filter_on_account_role(samldata):
