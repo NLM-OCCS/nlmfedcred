@@ -1,6 +1,7 @@
 import ctypes
 from ctypes import POINTER
 from ctypes import wintypes as wt
+from ctypes.util import find_library
 
 SCARDCONTEXT = POINTER(wt.ULONG)
 SCARDHANDLE = POINTER(wt.ULONG)
@@ -69,7 +70,7 @@ SCERR_NOCARDNAME = wt.DWORD(0x4000)
 SCERR_NOGUIDS = wt.DWORD(0x8000)
 
 
-class OPENCARD_SEARCH_CRITERIAW(ctypes.Structure):
+class OpencardSearchCriteria(ctypes.Structure):
     _fields_ = [
         ('dwStructSize', wt.DWORD),
         ('lpstrGroupNames', wt.LPWSTR),
@@ -87,7 +88,7 @@ class OPENCARD_SEARCH_CRITERIAW(ctypes.Structure):
     ]
 
 
-class OPENCARDNAMEW_EX(ctypes.Structure):
+class OpencardNameEx(ctypes.Structure):
     _fields_ = [
         ('dwStructSize', wt.DWORD),
         ('hSCardContext', SCARDCONTEXT),
@@ -96,7 +97,7 @@ class OPENCARDNAMEW_EX(ctypes.Structure):
         ('lpstrTitle', wt.LPWSTR),
         ('lpstrSearchDesc', wt.LPWSTR),
         ('hIcon', wt.HICON),
-        ('pOpenCardSearchCriteria', POINTER(OPENCARD_SEARCH_CRITERIAW)),
+        ('pOpenCardSearchCriteria', POINTER(OpencardSearchCriteria)),
         ('lpfnConnect', wt.LPVOID),                 # LPOCNCONNPROCW not copied
         ('pvUserData', wt.LPVOID),
         ('dwShareMode', wt.DWORD),
@@ -112,7 +113,7 @@ class OPENCARDNAMEW_EX(ctypes.Structure):
 
 SCardUIDlgSelectCardW = ctypes.WINFUNCTYPE(
     wt.LONG,
-    POINTER(OPENCARDNAMEW_EX),
+    POINTER(OpencardNameEx),
 )
 
 
@@ -129,3 +130,73 @@ SCARD_READER_SEL_AUTH_PACKAGE = wt.DWORD(-629)
 
 SCARD_AUDIT_CHV_FAILURE = wt.DWORD(0x0)         # A smart card holder verification (CHV)
 SCARD_AUDIT_CHV_SUCCESS = wt.DWORD(0x1)         # A smart card holder verification (CHV)
+
+
+class WinSCard:
+    def __init__(self):
+        winscard_path = find_library('winscard')
+        scarddlg_path = find_library('scarddlg')
+        self._dll = ctypes.WinDLL(winscard_path)
+        self._dlgdll = ctypes.WinDLL(scarddlg_path)
+        self.context = wt.PULONG()
+        self.context.value = 0
+        self._establish_context = SCardEstablishContext(('SCardEstablishContext', self._dll))
+        self._release_context = SCardReleaseContext(('SCardReleaseContext', self._dll))
+        self._is_valid_context = SCardIsValidContext(('SCardIsValidContext', self._dll))
+        self._cancel = SCardCancel(('SCardCancel', self._dll))
+        self._select_card = SCardUIDlgSelectCardW(('SCardUIDlgSelectCardW', self._dlgdll))
+        self._provider_name = SCardGetCardTypeProviderNameW(('SCardGetCardTypeProviderNameW', self._dll))
+
+    def __enter__(self):
+        self.establish_context()
+
+    def __exit__(self, exc_type, exc_val, exc_tb):
+        self.close()
+
+    def establish_context(self, scope=SCARD_SCOPE_USER):
+        return self._establish_context(scope, 0, 0, ctypes.byref(self.context))
+
+    def open(self, scope=SCARD_SCOPE_USER):
+        return self.establish_context(scope)
+
+    def is_valid_context(self):
+        return self._is_valid_context(self.context)
+
+    def release_context(self):
+        retval = self._release_context(self.context)
+        self.context.value = 0
+        return retval
+
+    def cancel(self):
+        return self._cancel(self.context)
+
+    def close(self):
+        self.cancel()
+        return self.release_context()
+
+    def open_dialog(self, title='My Select Card Title', flags=SC_DLG_MINIMAL_UI):
+        szReader = ctypes.create_unicode_buffer('',256)
+        szCard = ctypes.create_unicode_buffer('',256)
+        titlebuf = ctypes.create_unicode_buffer(title)
+        dlgstruct = OpencardNameEx()
+
+        dlgstruct.dwStructSize = ctypes.sizeof(dlgstruct)
+        dlgstruct.hSCardContext = self.context
+        dlgstruct.dwFlags = flags
+        dlgstruct.lpstrRdr = ctypes.cast(szReader, wt.LPWSTR)
+        dlgstruct.nMaxRdr = 256
+        dlgstruct.lpstrCard = ctypes.cast(szCard, wt.LPWSTR)
+        dlgstruct.nMaxCard = 256
+        dlgstruct.lpstrTitle = ctypes.cast(titlebuf, wt.LPWSTR)
+
+        status = self._select_card(ctypes.byref(dlgstruct))
+        return (status, szReader.value, szCard.value)
+
+    def provider_name(self, card):
+        card = ctypes.create_unicode_buffer(card)
+        providerName = ctypes.create_unicode_buffer(256)
+        cchProvider = wt.DWORD(256)
+
+        status = self._provider_name(self.context, card, SCARD_PROVIDER_CSP, providerName, cchProvider)
+
+        return (status, providerName.value, cchProvider.value)

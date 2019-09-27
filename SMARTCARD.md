@@ -1,10 +1,28 @@
 # Cracking the Smart Card puzzle
 
-## Winscard API
+## Resources
 
-It is clear that an application that is working with smart cards directly, e.g. not to get a "pass/fail" authenticated status
-but to actually read the X509 certificate (private) and convert it into an OpenSSH key, must use the SmartCard API.
+- MSDN Blog [How to read a certificate from a smart card and...](https://blogs.msdn.microsoft.com/winsdk/2010/05/28/how-to-read-a-certificate-from-a-smart-card-and-add-it-to-the-system-store/)
+- Chromium appears to be written in Python, and to use ctypes as well - [source code](https://chromium.googlesource.com/chromium/tools/depot_tools.git/+/master/fix_encoding.py)
 
+### Winscard API
+
+- [Online documentation](https://docs.microsoft.com/en-us/windows/win32/api/winscard/)
+- Include Files
+    * `C:\Program Files (x86)\Windows Kits\8.1\Include\um\winscard.h`
+    * `C:\Program Files (x86)\Windows Kits\8.1\Include\um\scarderr.h`
+- Libraries
+    * `C:\Windows\System32\winscard.dll`
+    * `C:\Windows\System32\scarddlg.dll` (for dialog functions)
+
+### Crypto API
+
+- [Online documentation](https://docs.microsoft.com/en-us/windows/win32/api/wincrypt/)
+- Include Files
+    * `C:\Program Files (x86)\Windows Kits\8.1\Include\um\wincrypt.h`
+- Libraries
+    * `C:\Windows\System32\advapi32.dll`
+    
 
 ## Smart Card Debugging
 
