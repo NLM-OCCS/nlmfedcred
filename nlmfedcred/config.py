@@ -19,10 +19,10 @@ __all__ = (
 )
 
 
-Config = namedtuple('Config', ('account', 'role', 'idp', 'username', 'ca_bundle',))
+Config = namedtuple('Config', ('account', 'role', 'duration', 'idp', 'username', 'ca_bundle',))
 
 
-def parse_config(profile, account, role, idp, username, ca_bundle=None, inipath=None):
+def parse_config(profile, account, role, duration, idp, username, ca_bundle=None, inipath=None):
 
     defaults = None
     awspath = get_aws_config_path()
@@ -54,6 +54,10 @@ def parse_config(profile, account, role, idp, username, ca_bundle=None, inipath=
     if role is not None:
         role = str(role)
 
+    if duration is None:
+        duration = config.get(section, 'duration', fallback=3600)
+        duration = int(duration)
+
     if idp is None:
         idp = config.get(section, 'idp', fallback=None)
     if idp is not None:
@@ -68,7 +72,7 @@ def parse_config(profile, account, role, idp, username, ca_bundle=None, inipath=
         username = config.get(section, 'username', fallback=get_user())
         username = str(username)
 
-    return Config(account, role, idp, username, ca_bundle)
+    return Config(account, role, duration, idp, username, ca_bundle)
 
 
 def get_user():

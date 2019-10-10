@@ -4,6 +4,7 @@ import os
 from bs4 import BeautifulSoup
 from lxml import etree
 from base64 import b64decode
+from datetime import datetime, timedelta
 import boto3
 import re
 import logging
@@ -67,6 +68,28 @@ def get_saml_assertion(username, password, idp, session=None):
     assert samlinput
     samlvalue = samlinput.attrs['value']
     return samlvalue
+
+
+def get_deadline(samlvalue):
+    namespaces = {
+        'p': 'urn:oasis:names:tc:SAML:2.0:protocol',
+        'a': 'urn:oasis:names:tc:SAML:2.0:assertion'
+    }
+    tree = etree.fromstring(b64decode(samlvalue), etree.XMLParser(resolve_entities=False))
+    authorization = tree.xpath('/p:Response/a:Assertion/a:AuthnStatement', namespaces=namespaces)[0]
+    deadline = authorization.get('SessionNotOnOrAfter')
+    if not deadline:
+        raise ValueError('The SAML Credentials have no expiration timestamp')
+    return datetime.strptime(deadline, '%Y-%m-%dT%H:%M:%SZ')
+
+
+def get_longest_duration(samlvalue, now=None):
+    if not now:
+        now = datetime.utcnow()
+    deadline = get_deadline(samlvalue) - timedelta(seconds=600)
+    if now >= deadline:
+        raise ValueError('The credential is expired or will expire in the next 10 minutes')
+    return (deadline - now).seconds
 
 
 def get_role_pairs(samlvalue):

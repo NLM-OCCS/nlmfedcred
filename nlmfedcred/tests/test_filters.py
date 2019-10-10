@@ -1,8 +1,9 @@
 """
 Test that filtering functions find correct principals and roles
 """
-from nlmfedcred import fedcred
 from base64 import b64decode
+from datetime import datetime
+from nlmfedcred import fedcred
 
 from .fixtures import *             # noqa # pylint: disable=unused-import
 
@@ -11,6 +12,23 @@ def test_data_decodes(samldata):
     samlxml = b64decode(samldata).decode('utf-8')
     assert type(samlxml) == str
     assert samlxml.startswith('<Response xmlns=')
+
+
+def test_get_deadline(samldata):
+    deadline = fedcred.get_deadline(samldata)
+    assert isinstance(deadline, datetime)
+    assert deadline.second == 17
+
+
+def test_longest_duration_past(samldata):
+    with pytest.raises(ValueError):
+        fedcred.get_longest_duration(samldata)
+
+
+def test_longest_duration_ok(samldata):
+    fake_now = datetime.strptime('2017-09-29T10:48:16Z', '%Y-%m-%dT%H:%M:%SZ')
+    duration = fedcred.get_longest_duration(samldata, fake_now)
+    assert duration == 13801
 
 
 def test_finds_all_roles(samldata):
