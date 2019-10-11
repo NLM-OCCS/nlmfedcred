@@ -9,6 +9,7 @@ from . import fedcred
 from .config import parse_config, setup_certificates, update_aws_credentials
 from .idp import make_idp, DEFAULT_IDP
 
+
 def parse_args(args):
     parser = argparse.ArgumentParser(prog="getawscreds", description='Output shell variables for an AWS role')
     parser.add_argument('--username', '-u', metavar='USERNAME', type=str, default=None,
@@ -36,7 +37,7 @@ def parse_args(args):
                         help='Specifies a section of $HOME/.getawscreds to use for your configuration')
     parser.add_argument('--idp', metavar='FQDN', default=None,
                         help='Specify FQDN to use when making federation calls')
-    parser.add_argument('--duration', metavar='SECONDS', default=None,
+    parser.add_argument('--duration', metavar='SECONDS', default=None, type=int,
                         help='Specify the duration of the temporary credentials')
     opts = parser.parse_args(args)
     return opts
@@ -86,7 +87,15 @@ def execute_from_command_line(args=None):
         print('Wrote certificate bundle to %s' % opts.setupcerts)
         return 0
 
-    config = parse_config(opts.profile, opts.account, opts.role, opts.idp, opts.username, ca_bundle=opts.ca_bundle)
+    config = parse_config(
+        opts.profile,
+        opts.account,
+        opts.role,
+        opts.duration,
+        opts.idp,
+        opts.username,
+        ca_bundle=opts.ca_bundle
+    )
     if config.idp is None:
         idp = DEFAULT_IDP
     else:
@@ -142,7 +151,8 @@ def execute_from_command_line(args=None):
         output_roles(authroles)
         return 1
 
-    creds = fedcred.assume_role_with_saml(role, principal, samlvalue, opts.region, opts.duration)
+    duration = config.duration
+    creds = fedcred.assume_role_with_saml(role, principal, samlvalue, opts.region, duration)
     if opts.shell:
         if opts.output:
             os.umask(int('0077', 8))
