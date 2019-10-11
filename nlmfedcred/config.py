@@ -42,7 +42,7 @@ def parse_config(profile, account, role, duration, idp, username, ca_bundle=None
     elif profile is None or profile == 'default':
         section = 'DEFAULT'
     else:
-        raise ProfileNotFound()
+        raise ProfileNotFound("Profile '{}' not found in confuguration".format(profile))
 
     if account is None:
         account = config.get(section, 'account', fallback=None)
