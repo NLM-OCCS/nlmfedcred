@@ -4,6 +4,7 @@ import os
 from bs4 import BeautifulSoup
 from lxml import etree
 from base64 import b64decode
+from datetime import datetime, timedelta
 import boto3
 import re
 import logging
@@ -69,6 +70,28 @@ def get_saml_assertion(username, password, idp, session=None):
     return samlvalue
 
 
+def get_deadline(samlvalue):
+    namespaces = {
+        'p': 'urn:oasis:names:tc:SAML:2.0:protocol',
+        'a': 'urn:oasis:names:tc:SAML:2.0:assertion'
+    }
+    tree = etree.fromstring(b64decode(samlvalue), etree.XMLParser(resolve_entities=False))
+    authorization = tree.xpath('/p:Response/a:Assertion/a:AuthnStatement', namespaces=namespaces)[0]
+    deadline = authorization.get('SessionNotOnOrAfter')
+    if not deadline:
+        raise ValueError('The SAML Credentials have no expiration timestamp')
+    return datetime.strptime(deadline, '%Y-%m-%dT%H:%M:%SZ')
+
+
+def get_longest_duration(samlvalue, now=None):
+    if not now:
+        now = datetime.utcnow()
+    deadline = get_deadline(samlvalue) - timedelta(seconds=600)
+    if now >= deadline:
+        raise ValueError('The credential is expired or will expire in the next 10 minutes')
+    return (deadline - now).seconds
+
+
 def get_role_pairs(samlvalue):
     namespaces = {
         'p': 'urn:oasis:names:tc:SAML:2.0:protocol',
@@ -88,25 +111,26 @@ def get_role_pairs(samlvalue):
     return pairs
 
 
-def filter_role_pairs(pairs, account=None, name=None):
-    arn_expr = ''
-    if account is not None:
-        arn_expr += 'arn:aws:iam::{:s}'.format(account)
+def build_filter_expr(account, name):
+    arn_expr = 'arn:aws:iam::{:s}'.format(account if account else '[^:]+')
     if name is not None:
-        arn_expr += ':role/{:s}'.format(name)
+        arn_expr += ':role/(nlm_aws_)?{:s}$'.format(name)
+    return arn_expr
 
-    if len(arn_expr) == 0:
+
+def filter_role_pairs(pairs, account=None, name=None):
+    if not account and not name:
         logger.debug('No account or role filtering')
-        filtered_pairs = pairs
-    else:
-        logger.debug("Filtering role pairs by '%s'" % arn_expr)
-        filtered_pairs = []
-        for pair in pairs:
-            role = pair[1]
-            if re.search(arn_expr, role) is not None:
-                filtered_pairs.append(pair)
-            else:
-                logger.debug('principal %s, role %s: does not match filter' % (pair[0], pair[1]))
+        return pairs
+    arn_expr = build_filter_expr(account, name)
+    logger.debug("Filtering role pairs by '%s'", arn_expr)
+    filtered_pairs = []
+    for pair in pairs:
+        role = pair[1]
+        if re.match(arn_expr, role):
+            filtered_pairs.append(pair)
+        else:
+            logger.debug('principal %s, role %s: does not match filter', pair[0], pair[1])
     return filtered_pairs
 
 
