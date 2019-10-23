@@ -1,8 +1,8 @@
+import os
+
 from nlmfedcred.cli import execute_from_command_line, output_creds
 from nlmfedcred.idp import DEFAULT_IDP
 from nlmfedcred.fedcred import Credentials
-
-from .fixtures import *
 
 SBOX_MLB_CONFIG = """# awscreds config
 [DEFAULT]

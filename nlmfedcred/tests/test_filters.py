@@ -3,9 +3,9 @@ Test that filtering functions find correct principals and roles
 """
 from base64 import b64decode
 from datetime import datetime
-from nlmfedcred import fedcred
 
-from .fixtures import *             # noqa # pylint: disable=unused-import
+import pytest
+from nlmfedcred import fedcred
 
 
 def test_data_decodes(samldata):
