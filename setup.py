@@ -38,6 +38,7 @@ setup(
     long_description_content_type='text/markdown; charset=UTF-8; variant=CommonMark',
     author='Dan Davis',
     author_email='daniel.davis@nih.gov',
+    url='https://git-scm.nlm.nih.gov/projects/CS/repos/nlmfedcred/',
     packages=find_packages(),
     include_package_data=True,
     scripts=['bin/getawscreds.py', 'bin/awscreds.cmd', 'bin/awscreds-func.sh'],
