@@ -10,6 +10,13 @@ from .config import parse_config, setup_certificates, update_aws_credentials
 from .idp import make_idp, DEFAULT_IDP
 
 
+DEFAULT_PROFILE = 'default'
+if 'AWS_DEFAULT_PROFILE' in os.environ:
+    DEFAULT_PROFILE = os.environ['AWS_DEFAULT_PROFILE']
+elif 'AWS_PROFILE' in os.environ:
+    DEFAULT_PROFILE = os.environ['AWS_PROFILE']
+
+
 def parse_args(args):
     parser = argparse.ArgumentParser(prog="getawscreds", description='Output shell variables for an AWS role')
     parser.add_argument('--username', '-u', metavar='USERNAME', type=str, default=None,
@@ -33,7 +40,7 @@ def parse_args(args):
     parser.add_argument('--account', '-a', metavar='ACCOUNT', default=None,
                         help='Account number filters possible roles by account number match')
     parser.add_argument('--profile', '-p', metavar='NAME', default=None,
-                        nargs='?', const=os.environ.get('AWS_DEFAULT_PROFILE', 'default'),
+                        nargs='?', const=DEFAULT_PROFILE,
                         help='Specifies a section of $HOME/.getawscreds to use for your configuration')
     parser.add_argument('--idp', metavar='FQDN', default=None,
                         help='Specify FQDN to use when making federation calls')
@@ -113,6 +120,7 @@ def execute_from_command_line(args=None):
     # If there is an AWS_DEFAULT_PROFILE, it could mess stuff up
     try:
         del os.environ['AWS_DEFAULT_PROFILE']
+        del os.environ['AWS_PROFILE']
     except KeyError:
         pass
 
