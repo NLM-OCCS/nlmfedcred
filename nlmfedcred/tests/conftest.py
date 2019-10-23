@@ -1,6 +1,10 @@
 import os
 import pytest
 
+# Safe from KeyError
+os.environ.pop('AWS_PROFILE', None)
+os.environ.pop('AWS_DEFAULT_PROFILE', None)
+
 DATA_DIR = os.path.join(os.path.dirname(__file__), 'data')
 
 
