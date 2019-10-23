@@ -11,10 +11,10 @@ from .idp import make_idp, DEFAULT_IDP
 
 
 DEFAULT_PROFILE = 'default'
-if 'AWS_DEFAULT_PROFILE' in os.environ:
-    DEFAULT_PROFILE = os.environ['AWS_DEFAULT_PROFILE']
-elif 'AWS_PROFILE' in os.environ:
+if 'AWS_PROFILE' in os.environ:
     DEFAULT_PROFILE = os.environ['AWS_PROFILE']
+elif 'AWS_DEFAULT_PROFILE' in os.environ:
+    DEFAULT_PROFILE = os.environ['AWS_DEFAULT_PROFILE']
 
 
 def parse_args(args):
