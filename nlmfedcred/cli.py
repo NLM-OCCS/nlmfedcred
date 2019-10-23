@@ -11,10 +11,10 @@ from .idp import make_idp, DEFAULT_IDP
 
 
 DEFAULT_PROFILE = 'default'
-if 'AWS_DEFAULT_PROFILE' in os.environ:
-    DEFAULT_PROFILE = os.environ['AWS_DEFAULT_PROFILE']
-elif 'AWS_PROFILE' in os.environ:
+if 'AWS_PROFILE' in os.environ:
     DEFAULT_PROFILE = os.environ['AWS_PROFILE']
+elif 'AWS_DEFAULT_PROFILE' in os.environ:
+    DEFAULT_PROFILE = os.environ['AWS_DEFAULT_PROFILE']
 
 
 def parse_args(args):
@@ -117,12 +117,10 @@ def execute_from_command_line(args=None):
     if config.ca_bundle:
         os.environ['REQUESTS_CA_BUNDLE'] = config.ca_bundle
 
-    # If there is an AWS_DEFAULT_PROFILE, it could mess stuff up
-    try:
-        del os.environ['AWS_DEFAULT_PROFILE']
-        del os.environ['AWS_PROFILE']
-    except KeyError:
-        pass
+    # If there is an AWS_DEFAULT_PROFILE or AWS_PROFILE, it could mess stuff up
+    # pop gets rid of them without KeyError
+    os.environ.pop('AWS_DEFAULT_PROFILE', None)
+    os.environ.pop('AWS_PROFILE', None)
 
     samlvalue = fedcred.get_saml_assertion(username, password, idp)
     if samlvalue == 'US-EN':
