@@ -5,6 +5,8 @@ bs4
 requests
 beautifulsoup4
 lxml
+cryptography
+PyKCS11
 
 # tests
 pytest
