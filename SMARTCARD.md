@@ -5,6 +5,49 @@
 - MSDN Blog [How to read a certificate from a smart card and...](https://blogs.msdn.microsoft.com/winsdk/2010/05/28/how-to-read-a-certificate-from-a-smart-card-and-add-it-to-the-system-store/)
 - Chromium appears to be written in Python, and to use ctypes as well - [source code](https://chromium.googlesource.com/chromium/tools/depot_tools.git/+/master/fix_encoding.py)
 
+### The Python Part
+
+- PyKCS11 needs to load the correct DLL or SO for the SmartCard vendor (ActivClient)
+    - Windows - C:\Program Files\HID Global\ActivClient\acpkcs211.dll
+    - Mac - /Library/Frameworks/ac.ac4mac.pkcs11.framework/Versions/Current/Libraries/acpkcs220.dylib
+
+```python
+from asn1crypto import x509
+from PyKCS11 import *
+pkcs11 = PyKCS11Lib()
+pkcs11.load('C:\\Program Files\\HID Global\\ActivClient\\acpkcs211.dll')
+session = pkcs11.openSession(slot, CKF_SERIAL_SESSION | CKF_RW_SESSION)
+pkcs11.getSlotList(tokenPresent=False)
+slot = pkcs11.getSlotList(tokenPresent=False)[0]
+session = pkcs11.openSession(slot, CKF_SERIAL_SESSION | CKF_RW_SESSION)
+
+# Here is where I enter the PIV code:
+session.login('999999')
+
+# Now enumerate the certificates and convert
+result = []
+certs = session.findObjects([(CKA_CLASS, CKO_CERTIFICATE)])
+certs
+len(certs)
+result = []
+for cert in certs:
+    cka_value, cka_id = session.getAttributeValue(cert, [CKA_VALUE, CKA_ID])
+    cert_der = bytes(cka_value)
+    cert = x509.Certificate.load(cert_der)
+    result.append(cert)
+print(result)
+result[0]
+print(result[0].subject.contents)
+```
+
+### The Web Part
+
+- Go to auth.nih.gov or authtest.nih.gov normally
+- When we choose PIV, we are redirected - https://pivauthtest.nih.gov/CertAuthV2/forms/NIHPIVRedirector.aspx?TARGET=-SM-HTTPS%3a%2f%2fauthtest.nih.gov%2faffwebservices%2fredirectjsp%2fSAML2redirect.jsp%3fSPID%3durn%3aamazon%3awebservices%26appname%3dNLM%26SMPORTALURL%3dhttps-%3a-%2f-%2fauthtest.nih.gov-%2faffwebservices-%2fpublic-%2fsaml2sso%26SAMLTRANSACTIONID%3d17290830--29bb70bf--1d22e666--2c12087b--8cf8a8dc--fee
+  This returns HTML, so the response document should be findable via Fiddler.
+- Whatever is done locally, there is a GET to https://authtest.nih.gov/affwebservices/public/saml2sso?SMASSERTIONREF=QUERY&SPID=urn%3Aamazon%3Awebservices&appname=NLM&SAMLTRANSACTIONID=17290830-29bb70bf-1d22e666-2c12087b-8cf8a8dc-fee
+- There are also lots of redirects
+
 ### Winscard API
 
 - [Online documentation](https://docs.microsoft.com/en-us/windows/win32/api/winscard/)
