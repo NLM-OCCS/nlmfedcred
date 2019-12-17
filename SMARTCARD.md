@@ -48,6 +48,40 @@ print(result[0].subject.contents)
 - Whatever is done locally, there is a GET to https://authtest.nih.gov/affwebservices/public/saml2sso?SMASSERTIONREF=QUERY&SPID=urn%3Aamazon%3Awebservices&appname=NLM&SAMLTRANSACTIONID=17290830-29bb70bf-1d22e666-2c12087b-8cf8a8dc-fee
 - There are also lots of redirects
 
+- When the user presses the "Log in" button, the following code is called in the submitForm function:
+
+```javascript
+window.location.href='https://pivauth.nih.gov/CertAuthV2/forms/HHSPIVRedirector.aspx?TARGET='+document.frm1.TARGET.value;
+return false;
+```
+
+- It is important here to note that this code is a mess, because the setting of the href should cause page reload
+  and nothing else should run after that. 
+- HHSPIVRedirector.aspx does in fact redirect, but we cannot get that page using curl or Telerik Fiddler. Even if we
+  did, we might see that it is running a custom version ActiveX control.  What we can tell is that the redirect page
+  forces the prompt and then redirects back to HHSPIVRedirector.aspx.
+- So, we can introspect the differences to the page content, cookies, and Query parameters between the initial load and
+  the redirect back to HHSPIVRedirector.aspx
+
+- It is probably just requiring a specific client certificate, so Windows puts up the dialog, and then when the client
+  certificate is validated, it redirects both.
+  
+## Proving it works (together)
+
+Try the below two ways:
+ - Once with urllib and no urllib3, where the challenge will be cookie management and basic coding, but where we
+   get OS certificate handling closer to vanilla.
+ - Once with requests and urllib3, where the challenge will be creating a context dependent SSL adapter (e.g. that
+   depends on the request).
+
+Algorithm:
+- Write script to go to https://authtest.nih.gov/affwebservices/public/saml2sso?SPID=urn:amazon:webservices&appname=NLM
+- Extract TARGET parameter from reponse
+- For PIV login, then go to 'https://pivauth.nih.gov/CertAuthV2/forms/HHSPIVRedirector.aspx?TARGET=' + encoded(TARGET)
+- If using requests, we may need to do this with redirect following off and use a different HTTPAdapter when the
+  the URL path endswith('/smgetcred.scc'), or better yet, retry with the PIV x509 certificate pair whenever we get
+  an SSL error (much more flexible, but raises eyebrows).
+
 ### Winscard API
 
 - [Online documentation](https://docs.microsoft.com/en-us/windows/win32/api/winscard/)
