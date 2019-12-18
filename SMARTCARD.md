@@ -4,6 +4,7 @@
 
 - MSDN Blog [How to read a certificate from a smart card and...](https://blogs.msdn.microsoft.com/winsdk/2010/05/28/how-to-read-a-certificate-from-a-smart-card-and-add-it-to-the-system-store/)
 - Chromium appears to be written in Python, and to use ctypes as well - [source code](https://chromium.googlesource.com/chromium/tools/depot_tools.git/+/master/fix_encoding.py)
+- Specification - NIST SP 800-73, “Cryptographic Algorithms and Key Sizes for PIV.”
 
 ### The Python Part
 
@@ -81,6 +82,39 @@ Algorithm:
 - If using requests, we may need to do this with redirect following off and use a different HTTPAdapter when the
   the URL path endswith('/smgetcred.scc'), or better yet, retry with the PIV x509 certificate pair whenever we get
   an SSL error (much more flexible, but raises eyebrows).
+  
+- At a lower level, this migth look like this:
+
+```python
+import requests
+from bs4 import BeautifulSoup
+from requests_toolbelt.adapters.x509 import X509Adapter
+
+AUTH_URL = 'https://authtest.nih.gov/affwebservices/public/saml2sso?SPID=urn:amazon:webservices&appname=NLM'
+PIV_URL = 'https://pivauth.nih.gov/CertAuthV2/forms/HHSPIVRedirector.aspx'
+
+session = requests.Session()
+r = session.get(AUTH_URL)
+soup = BeautifulSoup(r.content, 'lxml')
+target_value = soup.find('input', attrs={'name': 'target'}).get('value')
+piv_url = PIV_URL + '?TARGET=' + target_value
+r = session.get(piv_url, allow_redirects=False)
+getcred_url = r.headers['Location']
+
+# Load special adapter performing SSL encryption using a specific X509 certificate
+session.mount('https://', X509Adapter(cert_bytes, private_key_bytes))
+r = session.get(getcred_url, allow_redirects=False)
+piv_url = r.headers['Location']
+
+# Go back to "normal" adapter
+session.mount('https://'. HTTPAdapter())
+```
+
+Problem here is that we've solved the part where we read the certificate using the PIV, but the private key lives
+on the smart card and never leaves it.  We must implement the SSL ourselves, using primitives such as as:
+
+ - RSA sign (private key) and verify (public key) -  https://pkcs11wrap.sourceforge.io/api/samples.html#rsa-sign-verify
+ - Encrypt (for public key) decrypt (with private key) - https://pkcs11wrap.sourceforge.io/api/samples.html#encrypt-and-decrypt
 
 ### Winscard API
 

@@ -52,7 +52,26 @@ def read_certs_command(opts):
     certs = read_certs(pin, path)
 
     for i, cert in enumerate(certs):
-        print('Certifacte {}:'.format(i))
+        print('Certificate {}:'.format(i))
+        print('  Valid from {} to {}'.format(
+            cert.not_valid_before.strftime('%Y-%m-%d'),
+            cert.not_valid_after.strftime('%Y-%m-%d'),
+        ))
+        issuers = cert.issuer.get_attributes_for_oid(NameOID.COMMON_NAME)
+        if len(issuers) > 0:
+            print('  Issuer: {}'.format(issuers[0].value))
+        subjects = cert.subject.get_attributes_for_oid(NameOID.COMMON_NAME)
+        if len(subjects) > 0:
+            print('  Subject: {}'.format(subjects[0].value))
+        print('')
+
+
+def make_pem_command(opts):
+    path = find_pkcs11_library(opts.lib)
+    pin = opts.pin
+    certs = read_certs(pin, path)
+    for i, cert in enumerate(certs):
+        print('Certificate {}:'.format(i))
         print('  Valid from {} to {}'.format(
             cert.not_valid_before.strftime('%Y-%m-%d'),
             cert.not_valid_after.strftime('%Y-%m-%d'),
@@ -93,6 +112,7 @@ def check_tcl_command(opts):
     app = Application(master=root)
     app.mainloop()
 
+
 def create_parser(prog_name):
     parser = argparse.ArgumentParser(prog=prog_name, description='SmartCard proof of concept')
     sp = parser.add_subparsers(title='commands', dest='command', help='Enter a command to run')
@@ -106,6 +126,17 @@ def create_parser(prog_name):
                             help='You must enter your smart card PIN on the CLI, for now')
     readcerts.add_argument('--lib', metavar='PATH', default=None,
                            help='Specify the path of the PKCS 11 library to load')
+
+    makepem = sp.add_parser('pem', help='Read authentication certificate and write a PEM file')
+    makepem.set_defaults(func=make_pem_command)
+    makepem.add_argument('pin', metavar='PIN',
+                         help='You must enter your smart card PIN on the CLI, for now')
+    makepem.add_argument('--cert', metavar='PATH', default=None,
+                         help='Path to save the certificate')
+    makepem.add_argument('--key', metavar='PATH', default=None,
+                         help='Path to save the key')
+    makepem.add_argument('--lib', metavar='PATH', default=None,
+                         help='Specify the path of the PKCS 11 library to load')
     return parser
 
 
