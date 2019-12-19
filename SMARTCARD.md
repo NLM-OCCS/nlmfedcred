@@ -115,6 +115,15 @@ on the smart card and never leaves it.  We must implement the SSL ourselves, usi
 
  - RSA sign (private key) and verify (public key) -  https://pkcs11wrap.sourceforge.io/api/samples.html#rsa-sign-verify
  - Encrypt (for public key) decrypt (with private key) - https://pkcs11wrap.sourceforge.io/api/samples.html#encrypt-and-decrypt
+ 
+### Another layer of the onion
+
+See https://github.com/pyca/pyopenssl/issues/847 where I attempt to grapple with this.
+Best resolution would be a new module `requests-pkcs11` which puts `PyKCS11`, `pyopenssl` and `requests` together.
+
+Another solution is to write a `requests-winhttp` which provides an adapter that
+uses [WinHTTP](https://docs.microsoft.com/en-us/windows/win32/winhttp/winhttp-start-page) through ctypes or cffi.
+This would be a potentially cleaner way to interface with smart cards as multiple vendors would be supported.  
 
 ### Winscard API
 
