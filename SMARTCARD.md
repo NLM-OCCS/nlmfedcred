@@ -123,7 +123,10 @@ Best resolution would be a new module `requests-pkcs11` which puts `PyKCS11`, `p
 
 Another solution is to write a `requests-winhttp` which provides an adapter that
 uses [WinHTTP](https://docs.microsoft.com/en-us/windows/win32/winhttp/winhttp-start-page) through ctypes or cffi.
-This would be a potentially cleaner way to interface with smart cards as multiple vendors would be supported.  
+This would be a potentially cleaner way to interface with smart cards as multiple vendors would be supported.
+
+The script `scripts\pivauth_winhttp.py` prototyped this later idea by opening the `WinHttp.WinHttpRequest.5.1` COM
+object from within Python and attempting to use it directly. This did not work as hoped.
 
 ### Winscard API
 
