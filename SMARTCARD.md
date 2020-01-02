@@ -128,6 +128,13 @@ This would be a potentially cleaner way to interface with smart cards as multipl
 The script `scripts\pivauth_winhttp.py` prototyped this later idea by opening the `WinHttp.WinHttpRequest.5.1` COM
 object from within Python and attempting to use it directly. This did not work as hoped.
 
+The topic [SSL in WinHTTP](https://docs.microsoft.com/en-us/windows/win32/winhttp/ssl-in-winhttp) indicates I gave up
+too easily.  All that is needed is to figure out the correct string to pass to winRequest.SetClientCertificate().
+
+The topic [System Store Locations](https://docs.microsoft.com/en-us/windows/win32/seccrypto/system-store-locations)
+shows how these certificate stores relate to registry keys.  So, using `pyqt5`, I can query the user to
+choose a certificate once I master finding the certificates using pywin32.
+
 ### Winscard API
 
 - [Online documentation](https://docs.microsoft.com/en-us/windows/win32/api/winscard/)

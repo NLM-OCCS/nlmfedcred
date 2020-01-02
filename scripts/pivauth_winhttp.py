@@ -40,6 +40,7 @@ def get_target(url, winRequest):
 
 def get_piv(url, winRequest):
     winRequest.Open('GET', url)
+    winRequest.SetClientCertificate('path to a certificate in the registry')
     winRequest.Send()
 
     if winRequest.Status != 200:
