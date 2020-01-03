@@ -7,9 +7,7 @@ import pythoncom
 import win32com.client
 
 AUTH_URL = 'https://authtest.nih.gov/affwebservices/public/saml2sso?SPID=urn:amazon:webservices&appname=NLM'
-PIV_URL = 'https://pivauth.nih.gov/CertAuthV2/forms/HHSPIVRedirector.aspx'
-REDIRECTOR_URL = 'https://pivauth.nih.gov/CertAuthV2/forms/HHSPIVRedirector.aspx'
-
+PIV_URL = 'https://pivauthtest.nih.gov/CertAuthV2/forms/HHSPIVRedirector.aspx'
 USER_AGENT = 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/79.0.3945.88 Safari/537.36'
 
 def create_parser(prog_name):
