@@ -1,3 +1,4 @@
+import sys
 from importlib import import_module
 
 
@@ -6,6 +7,8 @@ def test_nlmfedcred():
     assert 'get_saml_assertion' in syms
     assert 'get_filtered_role_pairs' in syms
     assert 'assume_role_with_saml' in syms
+    if sys.platform == 'win32':
+        assert 'get_saml_assertion_piv' in syms
 
 
 def test_cli():
