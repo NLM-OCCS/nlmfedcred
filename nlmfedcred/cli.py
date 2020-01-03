@@ -108,7 +108,8 @@ def execute_from_command_line(args=None):
         opts.duration,
         opts.idp,
         opts.username,
-        ca_bundle=opts.ca_bundle
+        ca_bundle=opts.ca_bundle,
+        subject=opts.subject,
     )
     if config.idp is None:
         idp = DEFAULT_IDP
@@ -130,10 +131,10 @@ def execute_from_command_line(args=None):
     os.environ.pop('AWS_PROFILE', None)
 
     if opts.piv:
-        if opts.subject is None:
+        if config.subject is None:
             sys.stderr.write('Specify a subject for SmartCard authentication')
             return 1
-        samlvalue = fedcred.get_saml_assertion_piv(opts.subject, idp)
+        samlvalue = fedcred.get_saml_assertion_piv(config.subject, idp)
     else:
         samlvalue = fedcred.get_saml_assertion(username, password, idp)
     if samlvalue == 'US-EN':

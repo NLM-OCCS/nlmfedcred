@@ -89,6 +89,7 @@ def test_none_none(tmpdir):
     assert c.role is None
     assert c.idp is None
     assert c.duration == 3600
+    assert c.subject is None
 
 
 def test_file_not_found(tmpdir):
@@ -103,6 +104,7 @@ def test_file_not_found(tmpdir):
     assert c.role == 'nlm_aws_users'
     assert c.idp == 'authtest.nih.gov'
     assert c.duration == 3600
+    assert c.subject is None
 
 
 def test_parses_defaults(tmpdir):
