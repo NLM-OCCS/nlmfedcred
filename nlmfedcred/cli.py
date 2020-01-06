@@ -131,6 +131,9 @@ def execute_from_command_line(args=None):
     os.environ.pop('AWS_PROFILE', None)
 
     if opts.piv:
+        if sys.platform != 'win32':
+            sys.stderr.write('PIV login is not supported on Linux or MacOS')
+            return 1
         if config.subject is None:
             sys.stderr.write('Specify a subject for SmartCard authentication')
             return 1
