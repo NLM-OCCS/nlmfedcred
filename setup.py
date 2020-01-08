@@ -42,8 +42,20 @@ setup(
     packages=find_packages(),
     include_package_data=True,
     scripts=['bin/getawscreds.py', 'bin/awscreds.cmd', 'bin/awscreds-func.sh'],
-    install_requires=['boto3', 'bs4', 'requests', 'beautifulsoup4', 'lxml'],
-    tests_require=['pytest', 'tox'],
+    install_requires=[
+        'boto3',
+        'bs4',
+        'requests',
+        'beautifulsoup4',
+        'lxml',
+        "pywin32; sys_platform=='win32'",
+    ],
+    tests_require=[
+        'pytest',
+        'pytest-cov',
+        'pytest-pythonpath',
+        'pytest-mock',
+    ],
     cmdclass={
         'purge': PurgeCommand,
     },
