@@ -47,13 +47,10 @@ def parse_args(args):
                         help='Specify FQDN to use when making federation calls')
     parser.add_argument('--duration', metavar='SECONDS', default=None, type=int,
                         help='Specify the duration of the temporary credentials')
-    if sys.platform == 'win32':
-        parser.add_argument('--piv', default=None, action='store_true',
-                            help='Request PIV login rather than username/password')
-        parser.add_argument('--subject', metavar='NAME', default=None,
-                            help='The Subject of the X.509 certificate on the SmartCard')
-    else:
-        parser.set_defaults(piv=False, subject=None)
+    parser.add_argument('--piv', default=None, action='store_true',
+                        help='Request PIV login rather than username/password')
+    parser.add_argument('--subject', metavar='NAME', default=None,
+                        help='The Subject of the X.509 certificate on the SmartCard')
     opts = parser.parse_args(args)
     return opts
 
