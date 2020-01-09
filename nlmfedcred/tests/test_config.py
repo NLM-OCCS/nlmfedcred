@@ -2,13 +2,13 @@
 Test ability to parse configuration files
 """
 import os
-import pytest
 
+import pytest
+from nlmfedcred.config import (get_home, get_user, parse_config,
+                               setup_certificates)
 from nlmfedcred.exceptions import ProfileNotFound
-from nlmfedcred.config import parse_config, get_user, get_home, setup_certificates
 
 from . import restore_env, setup_awsconfig
-
 
 JUST_DEFAULTS = '''# awscreds config
 [DEFAULT]
@@ -89,6 +89,7 @@ def test_none_none(tmpdir):
     assert c.role is None
     assert c.idp is None
     assert c.duration == 3600
+    assert c.subject is None
 
 
 def test_file_not_found(tmpdir):
@@ -103,6 +104,7 @@ def test_file_not_found(tmpdir):
     assert c.role == 'nlm_aws_users'
     assert c.idp == 'authtest.nih.gov'
     assert c.duration == 3600
+    assert c.subject is None
 
 
 def test_parses_defaults(tmpdir):
@@ -181,14 +183,14 @@ def test_default_inipath(tmpdir, mocker):
     # mocks the function used to load the default inipath, to make sure that is called and works
     inipath = tmpdir.join('config.ini')
     inipath.write(REALISTIC_CONFIG)
-    with mocker.patch('nlmfedcred.config.get_awscreds_config_path', return_value=str(inipath)):
-        c = parse_config('NLM-QA', None, None, None, None, None)
-        assert c.account == '777777'
-        assert c.role == 'nlm_aws_users'
-        assert c.idp == 'auth7.nih.gov'
-        assert c.username == 'markfu'
-        assert c.ca_bundle is None
-        assert c.duration == 3600
+    mocker.patch('nlmfedcred.config.get_awscreds_config_path', return_value=str(inipath))
+    c = parse_config('NLM-QA', None, None, None, None, None)
+    assert c.account == '777777'
+    assert c.role == 'nlm_aws_users'
+    assert c.idp == 'auth7.nih.gov'
+    assert c.username == 'markfu'
+    assert c.ca_bundle is None
+    assert c.duration == 3600
 
 
 def test_ca_bundle_none_none(tmpdir, mocker):
@@ -196,27 +198,27 @@ def test_ca_bundle_none_none(tmpdir, mocker):
     if os.path.exists(awsconfig):
         os.remove(awsconfig)
 
-    with mocker.patch('nlmfedcred.config.get_aws_config_path', return_value=awsconfig):
-        c = parse_config('default', None, None, None, None, None, ca_bundle=None)      # being explicit
-        assert c.ca_bundle is None
+    mocker.patch('nlmfedcred.config.get_aws_config_path', return_value=awsconfig)
+    c = parse_config('default', None, None, None, None, None, ca_bundle=None)      # being explicit
+    assert c.ca_bundle is None
 
 
 def test_ca_bundle_takes_aws_over_none(tmpdir, mocker):
     mockbundle = str(tmpdir.join('mock-bundle.pem'))
     awsconfig = setup_awsconfig(tmpdir, mockbundle)
 
-    with mocker.patch('nlmfedcred.config.get_aws_config_path', return_value=awsconfig):
-        c = parse_config('default', None, None, None, None, None)
-        assert c.ca_bundle == mockbundle
+    mocker.patch('nlmfedcred.config.get_aws_config_path', return_value=awsconfig)
+    c = parse_config('default', None, None, None, None, None)
+    assert c.ca_bundle == mockbundle
 
 
 def test_ca_bundle_takes_provided_over_aws(tmpdir, mocker):
     mockbundle = str(tmpdir.join('mock-bundle.pem'))
     awsconfig = setup_awsconfig(tmpdir, mockbundle)
 
-    with mocker.patch('nlmfedcred.config.get_aws_config_path', return_value=awsconfig):
-        c = parse_config('default', None, None, None, None, None, ca_bundle='override-bundle')
-        assert c.ca_bundle == 'override-bundle'
+    mocker.patch('nlmfedcred.config.get_aws_config_path', return_value=awsconfig)
+    c = parse_config('default', None, None, None, None, None, ca_bundle='override-bundle')
+    assert c.ca_bundle == 'override-bundle'
 
 
 def test_setup_creds_initial(tmpdir):

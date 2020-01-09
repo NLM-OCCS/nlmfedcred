@@ -1,9 +1,11 @@
 """
 Test that the output based on a set of credentials is correct.
 """
-from nlmfedcred.cli import output_creds, output_roles
-from collections import namedtuple
 import os
+from collections import namedtuple
+
+from nlmfedcred.cli import output_creds, output_roles
+
 from . import restore_env
 
 try:

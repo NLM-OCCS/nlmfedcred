@@ -1,12 +1,15 @@
-from configparser import ConfigParser
-from collections import namedtuple
-import os
-import certifi
-from io import StringIO
 import hashlib
+import os
 import shutil
-from .exceptions import CertificatesFileNotFound, ProfileNotFound
+from collections import namedtuple
+from configparser import ConfigParser
+from io import StringIO
 
+import certifi
+
+import six
+
+from .exceptions import CertificatesFileNotFound, ProfileNotFound
 
 __all__ = (
     'Config',
@@ -19,10 +22,19 @@ __all__ = (
 )
 
 
-Config = namedtuple('Config', ('account', 'role', 'duration', 'idp', 'username', 'ca_bundle',))
+Config = namedtuple('Config', ('account', 'role', 'duration', 'idp', 'username', 'subject', 'ca_bundle'))
 
 
-def parse_config(profile, account, role, duration, idp, username, ca_bundle=None, inipath=None):
+def parse_config(
+        profile=None,
+        account=None,
+        role=None,
+        duration=None,
+        idp=None,
+        username=None,
+        ca_bundle=None,
+        subject=None,
+        inipath=None):
 
     defaults = None
     awspath = get_aws_config_path()
@@ -63,6 +75,11 @@ def parse_config(profile, account, role, duration, idp, username, ca_bundle=None
     if idp is not None:
         idp = str(idp)
 
+    if subject is None:
+        subject = config.get(section, 'subject', fallback=None)
+    if subject is not None:
+        subject = str(subject)
+
     if ca_bundle is None:
         ca_bundle = config.get(section, 'ca_bundle', fallback=None)
     if ca_bundle is not None:
@@ -72,7 +89,7 @@ def parse_config(profile, account, role, duration, idp, username, ca_bundle=None
         username = config.get(section, 'username', fallback=get_user())
         username = str(username)
 
-    return Config(account, role, duration, idp, username, ca_bundle)
+    return Config(account, role, duration, idp, username, subject, ca_bundle)
 
 
 def get_user():
@@ -88,7 +105,7 @@ def get_user():
     else:
         # crontab in Linux/OS X, may not work with setuid/setgid programs.
         # We assume a login shell changes semantics; this is by design
-        username = os.getlogin()
+        username = os.environ.get('USER')
     return username
 
 
@@ -162,17 +179,18 @@ def enum_certs(path):
             s = line.rstrip()
             if s == '-----BEGIN CERTIFICATE-----':
                 buf = StringIO()
-            buf.write(line)
+            buf.write(six.text_type(line))
             if s == '-----END CERTIFICATE-----':
                 certificate = buf.getvalue()
                 buf = StringIO()
                 yield certificate
 
+
 def update_aws_credentials(region, creds, profile='default', path=None):
     config = ConfigParser()
     if not path:
         path = get_aws_credentials_path()
-    dirname = os.path.dirname(path);
+    dirname = os.path.dirname(path)
     if os.path.isdir(dirname):
         config.read(path)
     else:
