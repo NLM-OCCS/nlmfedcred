@@ -130,10 +130,10 @@ def execute_from_command_line(args=None):
 
     if opts.piv:
         if sys.platform != 'win32':
-            sys.stderr.write('PIV login is not supported on Linux or MacOS')
+            sys.stderr.write('PIV login is not supported on Linux or MacOS\n')
             return 1
         if config.subject is None:
-            sys.stderr.write('Specify a subject for SmartCard authentication')
+            sys.stderr.write('Specify a subject for SmartCard authentication\n')
             return 1
         samlvalue = fedcred.get_saml_assertion_piv(config.subject, idp)
     else:
