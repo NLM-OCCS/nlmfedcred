@@ -10,7 +10,6 @@ from nlmfedcred import fedcred
 
 def test_data_decodes(samldata):
     samlxml = b64decode(samldata).decode('utf-8')
-    assert type(samlxml) == str
     assert samlxml.startswith('<Response xmlns=')
 
 

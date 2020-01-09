@@ -7,6 +7,8 @@ from io import StringIO
 
 import certifi
 
+import six
+
 from .exceptions import CertificatesFileNotFound, ProfileNotFound
 
 __all__ = (
@@ -103,7 +105,7 @@ def get_user():
     else:
         # crontab in Linux/OS X, may not work with setuid/setgid programs.
         # We assume a login shell changes semantics; this is by design
-        username = os.getlogin()
+        username = os.environ.get('USER')
     return username
 
 
@@ -177,7 +179,7 @@ def enum_certs(path):
             s = line.rstrip()
             if s == '-----BEGIN CERTIFICATE-----':
                 buf = StringIO()
-            buf.write(line)
+            buf.write(six.text_type(line))
             if s == '-----END CERTIFICATE-----':
                 certificate = buf.getvalue()
                 buf = StringIO()
