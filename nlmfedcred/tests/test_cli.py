@@ -1,8 +1,8 @@
 import os
 
 from nlmfedcred.cli import execute_from_command_line, output_creds
-from nlmfedcred.idp import DEFAULT_IDP
 from nlmfedcred.fedcred import Credentials
+from nlmfedcred.idp import DEFAULT_IDP
 
 SBOX_MLB_CONFIG = """# awscreds config
 [DEFAULT]
@@ -13,6 +13,7 @@ username = markfu
 [sbox-mlb]
 idp = auth7.nih.gov
 """
+
 
 def test_setup_certs(tmpdir):
     testbundle = str(tmpdir.join('test-bundle.pem'))

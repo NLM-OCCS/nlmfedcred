@@ -1,14 +1,15 @@
 #!/usr/bin/env python
-from __future__ import print_function, unicode_literals, absolute_import
+from __future__ import absolute_import, print_function, unicode_literals
+
+import argparse
 import os
 import sys
-import argparse
-from getpass import getpass
 from base64 import b64decode
+from getpass import getpass
+
 from . import fedcred
 from .config import parse_config, setup_certificates, update_aws_credentials
-from .idp import make_idp, DEFAULT_IDP
-
+from .idp import DEFAULT_IDP, make_idp
 
 DEFAULT_PROFILE = 'default'
 if 'AWS_PROFILE' in os.environ:

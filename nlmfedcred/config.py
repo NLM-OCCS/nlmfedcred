@@ -1,12 +1,13 @@
-from configparser import ConfigParser
-from collections import namedtuple
-import os
-import certifi
-from io import StringIO
 import hashlib
+import os
 import shutil
-from .exceptions import CertificatesFileNotFound, ProfileNotFound
+from collections import namedtuple
+from configparser import ConfigParser
+from io import StringIO
 
+import certifi
+
+from .exceptions import CertificatesFileNotFound, ProfileNotFound
 
 __all__ = (
     'Config',
@@ -182,11 +183,12 @@ def enum_certs(path):
                 buf = StringIO()
                 yield certificate
 
+
 def update_aws_credentials(region, creds, profile='default', path=None):
     config = ConfigParser()
     if not path:
         path = get_aws_credentials_path()
-    dirname = os.path.dirname(path);
+    dirname = os.path.dirname(path)
     if os.path.isdir(dirname):
         config.read(path)
     else:

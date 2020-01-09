@@ -1,6 +1,5 @@
 from collections import namedtuple
 
-
 FORM_URL_FORMAT = 'https://%s/affwebservices/public/saml2sso?SPID=urn:amazon:webservices&appname=NLM'
 LOGIN_URL_FORMAT = 'https://%s/siteminderagent/forms/login.fcc'
 PIV_URL_FORMAT = 'https://piv%s/CertAuthV2/forms/HHSPIVRedirector.aspx'

@@ -1,8 +1,8 @@
-from urllib.parse import quote_plus, urlsplit, urlunsplit
 
 import pythoncom
 import win32com.client
 from bs4 import BeautifulSoup
+from six.moves.urllib.parse import quote_plus, urlsplit, urlunsplit
 
 # We pretend to be Chrome 79 just to make sure
 USER_AGENT = 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/79.0.3945.88 Safari/537.36'
@@ -30,7 +30,7 @@ def process_redirector_target(target):
     if target.startswith('-SM-'):
         target = target[4:]
     if target.startswith('HTTPS:'):
-        target = 'https:'+target[6:]
+        target = 'https:' + target[6:]
     target = target.replace('-:', ':')
     target = target.replace('-/', '/')
     target = target.replace('-=', '=')
@@ -51,7 +51,7 @@ def process_redirector_target(target):
     params = dict(p.split('=', 1) for p in query.split('&'))
     params['SPID'] = quote_plus(params['SPID'])
     params['SMPORTALURL'] = quote_plus(params['SMPORTALURL'])
-    query = '&'.join(k+'='+v for k, v in params.items())
+    query = '&'.join(k + '=' + v for k, v in params.items())
     target = urlunsplit((split.scheme, split.netloc, split.path, query, split.fragment))
     return target
 

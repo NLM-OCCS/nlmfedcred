@@ -1,1 +1,1 @@
-from .fedcred import *
+from .fedcred import *  # noqa

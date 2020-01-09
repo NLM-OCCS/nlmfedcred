@@ -1,4 +1,5 @@
-from nlmfedcred.idp import DEFAULT_FORM_URL, DEFAULT_LOGIN_URL, DEFAULT_PIV_URL, make_idp
+from nlmfedcred.idp import (DEFAULT_FORM_URL, DEFAULT_LOGIN_URL,
+                            DEFAULT_PIV_URL, make_idp)
 
 
 def test_defaults():
