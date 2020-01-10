@@ -1,8 +1,8 @@
 import os
 
 from nlmfedcred.cli import execute_from_command_line, output_creds
-from nlmfedcred.idp import DEFAULT_IDP
 from nlmfedcred.fedcred import Credentials
+from nlmfedcred.idp import DEFAULT_IDP
 
 SBOX_MLB_CONFIG = """# awscreds config
 [DEFAULT]
@@ -13,6 +13,7 @@ username = markfu
 [sbox-mlb]
 idp = auth7.nih.gov
 """
+
 
 def test_setup_certs(tmpdir):
     testbundle = str(tmpdir.join('test-bundle.pem'))
@@ -59,8 +60,10 @@ def test_bad_password(mocker):
         'dummy',
         '--password', 'fake password'
     ]
-    getpass = mocker.patch('nlmfedcred.cli.getpass', return_value='fake password')
-    make_idp = mocker.patch('nlmfedcred.cli.make_idp', return_value=DEFAULT_IDP)
+    getpass = mocker.patch('nlmfedcred.cli.getpass',
+                           side_effect=RuntimeError('getpass should not be called'))
+    make_idp = mocker.patch('nlmfedcred.cli.make_idp',
+                            side_effect=RuntimeError('make_idp should not be called'))
     get_saml_assertion = mocker.patch('nlmfedcred.cli.fedcred.get_saml_assertion', return_value='US-EN')
     write_error = mocker.patch('nlmfedcred.cli.sys.stderr.write', return_value=0)
 
@@ -86,7 +89,8 @@ def test_bash_out(tmpdir, mocker, samldata):
         '--role', 'nlm_aws_users',
     ]
     getpass = mocker.patch('nlmfedcred.cli.getpass', return_value='fake password')
-    make_idp = mocker.patch('nlmfedcred.cli.make_idp', return_value=DEFAULT_IDP)
+    make_idp = mocker.patch('nlmfedcred.cli.make_idp',
+                            side_effect=RuntimeError('make_idp should not be called'))
     get_saml_assertion = mocker.patch('nlmfedcred.cli.fedcred.get_saml_assertion', return_value=samldata)
 
     expected_credentials = Credentials(access_key='7777', secret_key='8888', session_token='9999')

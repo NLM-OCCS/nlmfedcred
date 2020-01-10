@@ -5,6 +5,7 @@ class CertificatesFileNotFound(Exception):
     """
     pass
 
+
 # Define a class for no such profile
 class ProfileNotFound(Exception):
     """

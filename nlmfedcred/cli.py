@@ -1,14 +1,15 @@
 #!/usr/bin/env python
-from __future__ import print_function, unicode_literals, absolute_import
+from __future__ import absolute_import, print_function, unicode_literals
+
+import argparse
 import os
 import sys
-import argparse
-from getpass import getpass
 from base64 import b64decode
+from getpass import getpass
+
 from . import fedcred
 from .config import parse_config, setup_certificates, update_aws_credentials
-from .idp import make_idp, DEFAULT_IDP
-
+from .idp import DEFAULT_IDP, make_idp
 
 DEFAULT_PROFILE = 'default'
 if 'AWS_PROFILE' in os.environ:
@@ -46,6 +47,10 @@ def parse_args(args):
                         help='Specify FQDN to use when making federation calls')
     parser.add_argument('--duration', metavar='SECONDS', default=None, type=int,
                         help='Specify the duration of the temporary credentials')
+    parser.add_argument('--piv', default=None, action='store_true',
+                        help='Request PIV login rather than username/password')
+    parser.add_argument('--subject', metavar='NAME', default=None,
+                        help='The Subject of the X.509 certificate on the SmartCard')
     opts = parser.parse_args(args)
     return opts
 
@@ -101,7 +106,8 @@ def execute_from_command_line(args=None):
         opts.duration,
         opts.idp,
         opts.username,
-        ca_bundle=opts.ca_bundle
+        ca_bundle=opts.ca_bundle,
+        subject=opts.subject,
     )
     if config.idp is None:
         idp = DEFAULT_IDP
@@ -111,7 +117,7 @@ def execute_from_command_line(args=None):
     username = config.username
     if opts.password is not None:
         password = opts.password
-    else:
+    elif not opts.piv:
         password = getpass('Enter Password: ')
 
     if config.ca_bundle:
@@ -122,7 +128,16 @@ def execute_from_command_line(args=None):
     os.environ.pop('AWS_DEFAULT_PROFILE', None)
     os.environ.pop('AWS_PROFILE', None)
 
-    samlvalue = fedcred.get_saml_assertion(username, password, idp)
+    if opts.piv:
+        if sys.platform != 'win32':
+            sys.stderr.write('PIV login is not supported on Linux or MacOS\n')
+            return 1
+        if config.subject is None:
+            sys.stderr.write('Specify a subject for SmartCard authentication\n')
+            return 1
+        samlvalue = fedcred.get_saml_assertion_piv(config.subject, idp)
+    else:
+        samlvalue = fedcred.get_saml_assertion(username, password, idp)
     if samlvalue == 'US-EN':
         sys.stderr.write('No SAML Binding: could it be an invalid password?\n')
         return 1

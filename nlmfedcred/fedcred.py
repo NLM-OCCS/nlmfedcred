@@ -1,16 +1,19 @@
 #!/usr/bin/env python
 from __future__ import print_function, unicode_literals
+
+import logging
 import os
+import re
+import sys
+from base64 import b64decode
+from collections import namedtuple
+from datetime import datetime, timedelta
+
+import requests
+
+import boto3
 from bs4 import BeautifulSoup
 from lxml import etree
-from base64 import b64decode
-from datetime import datetime, timedelta
-import boto3
-import re
-import logging
-import requests
-from collections import namedtuple
-
 
 from .config import get_home
 
@@ -18,6 +21,9 @@ Credentials = namedtuple('Credentials', ['access_key', 'secret_key', 'session_to
 
 
 logger = logging.getLogger(__name__)
+
+if sys.platform == 'win32':
+    from .fedcred_win32 import *       # noqa
 
 
 def set_default_creds():
