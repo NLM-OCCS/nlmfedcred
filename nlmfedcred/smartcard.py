@@ -14,7 +14,7 @@ def find_pkcs11_library(raw_path=None):
         if sys.platform == 'win32':
             raw_path = r'C:\Program Files\HID Global\ActivClient'
         else:
-            raw_path = r'/Library/Frameworks/ac.ac4mac.pkcs11.framework/Versions/Current/Libraries'
+            raw_path = r'/Library/OpenSC/lib/opensc-pkcs11.so'
     path = Path(raw_path)
     if path.exists() and path.is_dir():
         if sys.platform == 'win32':

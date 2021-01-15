@@ -10,3 +10,4 @@
 /junit.xml
 /.tox/
 /.idea/
+.DS_Store
