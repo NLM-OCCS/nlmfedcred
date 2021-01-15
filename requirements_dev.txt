@@ -1,7 +1,8 @@
 -r requirements.txt
 
 ipython
+mkdocs
 awscli
 tox
 flake8
-isort[requirements]
+isort
