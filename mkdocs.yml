@@ -9,4 +9,4 @@ theme: readthedocs
 repo_name: BitBucket
 repo_url: https://git-scm.nlm.nih.gov/projects/CS/repos/nlmfedcred/
 site_author: Dan Davis
-site_descrption: A command-line supported federated AWS authentication through NIH Login
+site_description: A command-line supported federated AWS authentication through NIH Login
