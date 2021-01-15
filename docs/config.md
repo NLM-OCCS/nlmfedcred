@@ -2,5 +2,17 @@
 title: nlmfedcred / Configuration
 ---
 
-This page provides details on the configuration file.
+## Path
+
+On Windows, the `getawscreds` command-line looks first in `%APPDATA%\getawscreds.ini`, and then 
+at `%USERPROFILE%\.getawscreds`.
+
+On Linux and MacOX, the only location checked is `~/.getawscreds`.
+
+## Default Options
+
+## Profile Specific Options
+
+## Example File
+
 

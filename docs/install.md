@@ -27,7 +27,7 @@ A python sdist and binary wheel can be built as follows:
 
 ### From a PyPI repository
 
-If you have placed a python sdist or wheel into a custom PyPI respository,
+If you have placed a python sdist or binary wheel into a custom PyPI respository,
 and properly configured pip to use that custom repository, then you 
 can install this package as follows:
 
