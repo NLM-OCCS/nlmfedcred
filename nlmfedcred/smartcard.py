@@ -1,12 +1,19 @@
+#!/usr/bin/env python3
 import argparse
+import os
 import sys
 from pathlib import Path
 
 from cryptography import x509
 from cryptography.hazmat.backends import default_backend
-from cryptography.hazmat.primitives import hashes
 from cryptography.x509.oid import NameOID
-from PyKCS11 import *
+from cryptography.hazmat.primitives.serialization import Encoding, PublicFormat
+from PyKCS11 import (
+    PyKCS11Lib,
+    CKA_CLASS, CKA_VALUE, CKA_ID,
+    CKF_SERIAL_SESSION, CKF_RW_SESSION,
+    CKO_CERTIFICATE
+)
 
 
 def find_pkcs11_library(raw_path=None):
@@ -14,13 +21,13 @@ def find_pkcs11_library(raw_path=None):
         if sys.platform == 'win32':
             raw_path = r'C:\Program Files\HID Global\ActivClient'
         else:
-            raw_path = r'/Library/OpenSC/lib/opensc-pkcs11.so'
+            raw_path = r'/Library/OpenSC/lib'
     path = Path(raw_path)
     if path.exists() and path.is_dir():
         if sys.platform == 'win32':
             path = path.joinpath('acpkcs211.dll')
         else:
-            path = path.joinpath('acpkcs220.dylib')
+            path = path.joinpath('opensc-pkcs11.so')
     if not path.exists():
         raise ValueError('{}: file not found'.format(str(path)))
     return str(path)
@@ -66,75 +73,69 @@ def read_certs_command(opts):
         print('')
 
 
-def make_pem_command(opts):
-    path = find_pkcs11_library(opts.lib)
-    pin = opts.pin
+def get_public_key(pin, path, cert_num):
     certs = read_certs(pin, path)
-    for i, cert in enumerate(certs):
-        print('Certificate {}:'.format(i))
-        print('  Valid from {} to {}'.format(
-            cert.not_valid_before.strftime('%Y-%m-%d'),
-            cert.not_valid_after.strftime('%Y-%m-%d'),
-        ))
-        issuers = cert.issuer.get_attributes_for_oid(NameOID.COMMON_NAME)
-        if len(issuers) > 0:
-            print('  Issuer: {}'.format(issuers[0].value))
-        subjects = cert.subject.get_attributes_for_oid(NameOID.COMMON_NAME)
-        if len(subjects) > 0:
-            print('  Subject: {}'.format(subjects[0].value))
-        print('')
+
+    if cert_num < 0:
+        print('error: certificate should be non-negative', file=sys.stderr)
+        return
+    elif cert_num >= len(certs):
+        print('error: no such certificate', file=sys.stderr)
+        return
+    cert = certs[cert_num]
+    return cert.public_key()
 
 
-def check_tcl_command(opts):
-    import tkinter as tk
+def make_openssh_command(opts):
+    pubkey = get_public_key(opts.pin, find_pkcs11_library(opts.lib), opts.cert)
+    pubbytes = pubkey.public_bytes(
+        encoding=Encoding.OpenSSH,
+        format=PublicFormat.OpenSSH,
+    )
+    pubbytes = pubbytes.decode('utf-8')
+    print(pubbytes + ' ' + os.getlogin() + '-piv')
 
-    class Application(tk.Frame):
-        def __init__(self, master=None):
-            super().__init__(master)
-            self.master = master
-            self.pack()
-            self.create_widgets()
 
-        def create_widgets(self):
-            self.hi_there = tk.Button(self)
-            self.hi_there["text"] = "Hello World\n(click me)"
-            self.hi_there["command"] = self.say_hi
-            self.hi_there.pack(side="top")
-
-            self.quit = tk.Button(self, text="QUIT", fg="red",
-                                  command=self.master.destroy)
-            self.quit.pack(side="bottom")
-
-        def say_hi(self):
-            print("hi there, everyone!")
-
-    root = tk.Tk()
-    app = Application(master=root)
-    app.mainloop()
+def make_pem_command(opts):
+    pubkey = get_public_key(opts.pin, find_pkcs11_library(opts.lib), opts.cert)
+    pubbytes = pubkey.public_bytes(
+        encoding=Encoding.PEM,
+        format=PublicFormat.SubjectPublicKeyInfo,
+    )
+    pubbytes = pubbytes.decode('utf-8')
+    print(pubbytes, end='')
 
 
 def create_parser(prog_name):
     parser = argparse.ArgumentParser(prog=prog_name, description='SmartCard proof of concept')
     sp = parser.add_subparsers(title='commands', dest='command', help='Enter a command to run')
 
-    tclc = sp.add_parser('tcl', help='Validates whether tcl/tk works with your Python installation')
-    tclc.set_defaults(func=check_tcl_command)
-
     readcerts = sp.add_parser('certs', help='Reads certficates from your smart card')
     readcerts.set_defaults(func=read_certs_command)
     readcerts.add_argument('pin', metavar='PIN',
-                            help='You must enter your smart card PIN on the CLI, for now')
+                           help='You must enter your smart card PIN on the CLI, for now')
     readcerts.add_argument('--lib', metavar='PATH', default=None,
                            help='Specify the path of the PKCS 11 library to load')
+
+    openssh = sp.add_parser('openssh', help='Read authentication certificate and write an OpenSSH file')
+    openssh.set_defaults(func=make_openssh_command)
+    openssh.add_argument('pin', metavar='PIN',
+                         help='You must enter your smart card PIN on the CLI, for now')
+    openssh.add_argument('--cert', metavar='NUMBER', default=0, type=int,
+                         help='Which certificate')
+    openssh.add_argument('--key', metavar='PATH', default=None,
+                         help='Path to save the OpenSSH key')
+    openssh.add_argument('--lib', metavar='PATH', default=None,
+                         help='Specify the path of the PKCS 11 library to load')
 
     makepem = sp.add_parser('pem', help='Read authentication certificate and write a PEM file')
     makepem.set_defaults(func=make_pem_command)
     makepem.add_argument('pin', metavar='PIN',
                          help='You must enter your smart card PIN on the CLI, for now')
-    makepem.add_argument('--cert', metavar='PATH', default=None,
-                         help='Path to save the certificate')
+    makepem.add_argument('--cert', metavar='NUMBER', default=0, type=int,
+                         help='Which certificate')
     makepem.add_argument('--key', metavar='PATH', default=None,
-                         help='Path to save the key')
+                         help='Path to save the OpenSSH key')
     makepem.add_argument('--lib', metavar='PATH', default=None,
                          help='Specify the path of the PKCS 11 library to load')
     return parser
