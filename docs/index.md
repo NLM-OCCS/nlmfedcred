@@ -9,23 +9,42 @@ must use their username and password.  Service accounts also use a username and 
 ## How it works
 
 The software requests your password or PIV PIN code, and then logs into
-NIH login using these parameters.  When NIH login returns the SAML Assertion,
-the software extracts it from the HTML page, and presents that XML (the SAML assertion)
-directly to the AWS API 
+NIH login using these parameters. NIH login returns HTML that encodes what
+accounts and roles you may become, along with a web form that would automatically
+submit to AWS.  This software extracts the information, called a SAML Assertion, and presents 
+it directly to the AWS API 
 [sts:AssumeRoleWithSAML](https://docs.aws.amazon.com/STS/latest/APIReference/API_AssumeRoleWithSAML.html).
 
-That API returns credentials that are written into the AWS CLI credential file `~/.aws/credentials`, or output in a
-format appropriate for a bash shell or for Windows command-prompt (`cmd.exe`).
+That API returns temporary credentials, typically good for about an hour.  The software
+writes these into the AWS CLI credential file `~/.aws/credentials`, or outputs the credentials 
+for a bash shell or for Windows command-prompt (`cmd.exe`).
 
 ## Named Profiles
 
-An administrator or developer may be granted through the SAML assertion the ability
-to authenticate to multiple roles on multiple accounts in AWS. Luckily, the AWS CLI and libraries support a concept
+A user may be granted the ability to authenticate to multiple roles on multiple accounts in AWS.
+The information about which accounts and roles are available is encoded into
+a SAML Assertion. Luckily, the AWS CLI and libraries support a concept
 called [Named Profiles](https://docs.aws.amazon.com/cli/latest/userguide/cli-configure-profiles.html) 
 so that a user can manage the credentials for many profiles.
 
 In order to know which federated role corresponds to which profile in which AWS
 account, the `getawscreds` command-line read a configuration file.
+
+## Typical Usage
+
+Once a configuration file is created, typical usage is to type:
+
+```bash
+getawscreds -p profile --piv
+```
+
+or
+ 
+```bash
+getawscreds -p profile
+```
+
+You will then be prompted as needed.
 
 ## Working with IDEs
 

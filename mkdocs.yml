@@ -3,6 +3,7 @@ nav:
   - About: index.md
   - Installation: install.md
   - Configuration: config.md
+  - How To: howto.md
   - Trouble Shooting: trouble.md
   - Smartcard Utility: smartcard.md
 theme: readthedocs

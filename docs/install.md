@@ -32,3 +32,10 @@ and properly configured pip to use that custom repository, then you
 can install this package as follows:
 
     pip install nlmfedcred
+
+### Smart Card Utility
+
+This also includes a smart card utility.  To enable the smartcard
+utility, install PyKCS11:
+
+    pip install PyKCS11
