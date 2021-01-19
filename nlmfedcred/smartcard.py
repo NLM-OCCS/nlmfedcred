@@ -2,6 +2,7 @@
 import argparse
 import os
 import sys
+from getpass import getpass
 from pathlib import Path
 
 from cryptography import x509
@@ -55,7 +56,7 @@ def read_certs(pin, path):
 
 def read_certs_command(opts):
     path = find_pkcs11_library(opts.lib)
-    pin = opts.pin
+    pin = getpass('Enter PIN: ')
     certs = read_certs(pin, path)
 
     for i, cert in enumerate(certs):
@@ -86,24 +87,30 @@ def get_public_key(pin, path, cert_num):
     return cert.public_key()
 
 
-def make_openssh_command(opts):
-    pubkey = get_public_key(opts.pin, find_pkcs11_library(opts.lib), opts.cert)
-    pubbytes = pubkey.public_bytes(
-        encoding=Encoding.OpenSSH,
-        format=PublicFormat.OpenSSH,
-    )
-    pubbytes = pubbytes.decode('utf-8')
-    print(pubbytes + ' ' + os.getlogin() + '-piv')
+def export_pubkey_command(opts):
+    pin = getpass('Enter PIN: ')
+    pubkey = get_public_key(pin, find_pkcs11_library(opts.lib), opts.cert)
+    format = opts.format
+    if format == 'openssh':
+        pubbytes = pubkey.public_bytes(
+            encoding=Encoding.OpenSSH,
+            format=PublicFormat.OpenSSH,
+        )
+        pubbytes = pubbytes.decode('utf-8')
+        print(pubbytes + ' ' + os.getlogin() + '-piv')
+    else:
+        pubbytes = pubkey.public_bytes(
+            encoding=Encoding.PEM,
+            format=PublicFormat.SubjectPublicKeyInfo,
+        )
+        pubbytes = pubbytes.decode('utf-8')
+        print(pubbytes, end='')
 
 
-def make_pem_command(opts):
-    pubkey = get_public_key(opts.pin, find_pkcs11_library(opts.lib), opts.cert)
-    pubbytes = pubkey.public_bytes(
-        encoding=Encoding.PEM,
-        format=PublicFormat.SubjectPublicKeyInfo,
-    )
-    pubbytes = pubbytes.decode('utf-8')
-    print(pubbytes, end='')
+def setup_command(opts):
+    pin = getpass('Enter PIN: ')
+    print('Not yet implemented', file=sys.stderr)
+    return 1
 
 
 def create_parser(prog_name):
@@ -112,32 +119,23 @@ def create_parser(prog_name):
 
     readcerts = sp.add_parser('certs', help='Reads certficates from your smart card')
     readcerts.set_defaults(func=read_certs_command)
-    readcerts.add_argument('pin', metavar='PIN',
-                           help='You must enter your smart card PIN on the CLI, for now')
     readcerts.add_argument('--lib', metavar='PATH', default=None,
-                           help='Specify the path of the PKCS 11 library to load')
+                           help='Specify the path of the PKCS 11 library')
 
-    openssh = sp.add_parser('openssh', help='Read authentication certificate and write an OpenSSH file')
-    openssh.set_defaults(func=make_openssh_command)
-    openssh.add_argument('pin', metavar='PIN',
-                         help='You must enter your smart card PIN on the CLI, for now')
+    openssh = sp.add_parser('pubkey', help='Read authentication certificate and write an OpenSSH file')
+    openssh.set_defaults(func=export_pubkey_command)
     openssh.add_argument('--cert', metavar='NUMBER', default=0, type=int,
                          help='Which certificate')
+    openssh.add_argument('--format', choices=['openssh', 'pem'], default='openssh')
     openssh.add_argument('--key', metavar='PATH', default=None,
                          help='Path to save the OpenSSH key')
     openssh.add_argument('--lib', metavar='PATH', default=None,
-                         help='Specify the path of the PKCS 11 library to load')
+                         help='Specify the path of the PKCS 11 library')
 
-    makepem = sp.add_parser('pem', help='Read authentication certificate and write a PEM file')
-    makepem.set_defaults(func=make_pem_command)
-    makepem.add_argument('pin', metavar='PIN',
-                         help='You must enter your smart card PIN on the CLI, for now')
-    makepem.add_argument('--cert', metavar='NUMBER', default=0, type=int,
-                         help='Which certificate')
-    makepem.add_argument('--key', metavar='PATH', default=None,
-                         help='Path to save the OpenSSH key')
+    makepem = sp.add_parser('setup', help='Print out the data to ')
+    makepem.set_defaults(func=setup_command)
     makepem.add_argument('--lib', metavar='PATH', default=None,
-                         help='Specify the path of the PKCS 11 library to load')
+                         help='Specify the path of the PKCS 11 library')
     return parser
 
 

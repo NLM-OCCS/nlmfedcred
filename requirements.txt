@@ -5,6 +5,7 @@ bs4
 requests
 beautifulsoup4
 lxml
+cryptography
 pywin32; sys_platform == 'win32'
 
 # tests

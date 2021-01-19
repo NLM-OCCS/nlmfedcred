@@ -48,8 +48,12 @@ setup(
         'requests',
         'beautifulsoup4',
         'lxml',
+        'cryptography',
         "pywin32; sys_platform=='win32'",
     ],
+    extras_require={
+        'smartcard': ['PyKCS11'],
+    },
     tests_require=[
         'pytest',
         'pytest-cov',
@@ -60,7 +64,8 @@ setup(
         'purge': PurgeCommand,
     },
     entry_points={'console_scripts': [
-        'getawscreds = nlmfedcred.cli:execute_from_command_line',
+        'getawscreds = nlmfedcred.cli:main',
+        'smartcard = nlmfedcred.smartcard:main',
     ]},
     classifiers=[
         'Development Status :: 4 - Beta',
@@ -69,9 +74,8 @@ setup(
         'Intended Audience :: Developers',
         'Intended Audience :: System Administrators',
         'Operating System :: MacOS :: MacOS X',
-        'Operating System :: Mocrosoft :: Windows',
+        'Operating System :: Microsoft :: Windows',
         'Operating System :: POSIX',
-        'Programming Language :: Python :: 2.7',
         'Programming Language :: Python :: 3.5',
         'Programming Language :: Python :: 3.6',
         'Topic :: System :: System Administration',
