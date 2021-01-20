@@ -99,3 +99,5 @@ getawscreds -p --piv
 
 If you just logged in or authenticated to a website, you may
 not be prompted at all.
+
+__Note__: This feature only supports Windows 10, and is pretty new.

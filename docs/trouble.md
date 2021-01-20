@@ -4,9 +4,15 @@ title: nlmfedcred / Trouble Shooting
 
 This page provides trouble shooting procedures.
 
-## No SAML Binding
+## Command Line Parameters
 
-I got a message like this:
+How can I find all the command line parameters:
+
+```
+getawscreds -h
+```
+
+## No SAML Binding
 
 ```
 No SAML Binding: could it be an invalid password?
@@ -16,10 +22,10 @@ If it is not an invalid password, then your account may be locked.
 
 ## I got a RequestExpired error
 
-I ran `getawscreds` and it seemed to work, but now the AWS command-line says "RequestExpired".
+I ran `getawscreds` and it seemed to work, but now I see something like:
 
 ```
-An error occurred (RequestExpired) when calling the DescribeRegions operation: Request has expired.
+An error occurred (RequestExpired) when ...
 ```
 
 This means that the temporary credentials have expired.  However, it could
@@ -52,3 +58,13 @@ just moving from Development and integration to later stages:
 ```
 getawscreds --username ServiceAccount --idp auth.nih.gov --samlout service-saml.xml
 ```
+
+### I tried to extend the duration
+
+I put `duration = 14400` in my configuration file, and now I 
+cannot authenticate.  
+
+The duration must be configured both by the CIT NIH Login team, in your
+AWS role, and then in the getawscreds command-line.  Try to 
+login to the AWS Console in your browser and literally check
+the maximum duration in the IAM > Roles area of the console.
