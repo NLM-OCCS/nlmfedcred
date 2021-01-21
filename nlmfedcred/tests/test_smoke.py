@@ -13,7 +13,7 @@ def test_nlmfedcred():
 
 def test_cli():
     syms = dir(import_module('nlmfedcred.cli'))
-    assert 'execute_from_command_line' in syms
+    assert 'main' in syms
 
 
 def test_idp():
@@ -31,3 +31,8 @@ def test_config():
 def test_exceptions():
     syms = dir(import_module('nlmfedcred.exceptions'))
     assert len(syms) > 0
+
+
+def test_martcard():
+    syms = dir(import_module('nlmfedcred.smartcard'))
+    assert 'main' in syms

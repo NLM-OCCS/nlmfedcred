@@ -116,7 +116,7 @@ def setup_command(opts):
     now = datetime.now()
     for cert in certs:
         if now < cert.not_valid_before or now > cert.not_valid_after:
-           continue
+            continue
         subjects = cert.subject.get_attributes_for_oid(NameOID.COMMON_NAME)
         if len(subjects) == 0:
             continue
