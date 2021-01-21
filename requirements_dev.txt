@@ -1,14 +1,8 @@
 -r requirements.txt
 
-# utility
 ipython
 awscli
-
-# documentation
-mkdocs
-mkdocs-pdf-export-plugin
-
-# running tests
-tox
-flake8
 isort
+flake8
+mkdocs
+tox
