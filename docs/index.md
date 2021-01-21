@@ -23,7 +23,7 @@ for a bash shell or for Windows command-prompt (`cmd.exe`).
 
 A user may be granted the ability to authenticate to multiple roles on multiple accounts in AWS.
 The information about which accounts and roles are available is encoded into
-a SAML Assertion. Luckily, the AWS CLI and libraries support a concept
+the SAML Assertion. Luckily, the AWS CLI and libraries support a concept
 called [Named Profiles](https://docs.aws.amazon.com/cli/latest/userguide/cli-configure-profiles.html) 
 so that a user can manage the credentials for many profiles.
 
@@ -50,4 +50,4 @@ You will then be prompted as needed.
 
 Since the temporary credentials are written into the standard AWS
 credentials file, `~/.aws/credentials`, working with an IDE is usually
-as simple as specifying which Profile should be used.
+as simple as specifying which AWS profile should be used.

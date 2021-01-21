@@ -18,8 +18,7 @@ named profile, and the command-line typically saves the credentials to that name
 ## Default Options
 
 The defaults that apply to all named profiles are in a section
-called "[DEFAULT]" so as to avoid conflicting with the AWS
-named profile called "default".  For example, to set the default
+called "[DEFAULT]". For example, to set the default
 role within AWS to one named "nlm_aws_users", you would write:
 
 ```ini
@@ -29,14 +28,9 @@ role = nlm_aws_users
 
 ## Profile Specific Options
 
-Roles such as "default", "prod", and "devel" might be specified as follows:
+Roles such as "devel" or "prod" might be specified as follows:
 
 ```ini
-[default]
-idp = authtest.nih.gov
-account = 758297805533
-role = nlm_aws_users
-
 [devel]
 idp = authtest.nih.gov
 account = 232258963078
@@ -64,4 +58,4 @@ configurable parameters. These are also available on the command-line.
 | subject  | Controls which smartcard certificate will be used when authenticating by PIV |
 | username | Allows a user to authenticate with a different username, for example a Service Account |
 
-
+&nbsp;

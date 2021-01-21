@@ -86,7 +86,7 @@ Here's an example:
 subject = Daniel A. Davis -A (Affiliate)
 idp = authtest.nih.gov
 
-[default]
+[devel]
 account = 232258963078
 role = nlm_aws_users
 ```
@@ -94,10 +94,10 @@ role = nlm_aws_users
 Now, I can authenticate as follows:
 
 ```bash
-getawscreds -p --piv
+getawscreds -p devel --piv
 ```
 
 If you just logged in or authenticated to a website, you may
-not be prompted at all.
+not be prompted for your PIV at all.
 
 __Note__: This feature only supports Windows 10, and is pretty new.

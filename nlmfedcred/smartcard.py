@@ -2,6 +2,7 @@
 import argparse
 import os
 import sys
+from datetime import datetime
 from getpass import getpass
 from pathlib import Path
 
@@ -109,7 +110,23 @@ def export_pubkey_command(opts):
 
 def setup_command(opts):
     pin = getpass('Enter PIN: ')
-    print('Not yet implemented', file=sys.stderr)
+    path = find_pkcs11_library(opts.lib)
+    certs = read_certs(pin, path)
+
+    now = datetime.now()
+    for cert in certs:
+        if now < cert.not_valid_before or now > cert.not_valid_after:
+           continue
+        subjects = cert.subject.get_attributes_for_oid(NameOID.COMMON_NAME)
+        if len(subjects) == 0:
+            continue
+        subject = subjects[0].value
+        if '-A' in subject:
+            print('Update your configuration file to contain the following:\n')
+            print('[DEFAULT]')
+            print('subject = %s' % subject)
+            return 0
+    print('No valid web authentication certificate found', file=sys.stderr)
     return 1
 
 

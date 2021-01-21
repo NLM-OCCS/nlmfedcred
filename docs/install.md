@@ -11,8 +11,7 @@ tested on these platforms.
 ## Installation
 
 This module can be installed the same way you would install any other Python package.
-However, it is not distributed to the global PyPI repository, and so this
-option will be presented last.
+However, it is not distributed to the global PyPI repository.
 
 ### From a tarball or cloned distribution
 
