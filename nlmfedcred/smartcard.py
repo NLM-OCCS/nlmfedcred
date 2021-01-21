@@ -8,14 +8,10 @@ from pathlib import Path
 
 from cryptography import x509
 from cryptography.hazmat.backends import default_backend
-from cryptography.x509.oid import NameOID
 from cryptography.hazmat.primitives.serialization import Encoding, PublicFormat
-from PyKCS11 import (
-    PyKCS11Lib,
-    CKA_CLASS, CKA_VALUE, CKA_ID,
-    CKF_SERIAL_SESSION, CKF_RW_SESSION,
-    CKO_CERTIFICATE
-)
+from cryptography.x509.oid import NameOID
+from PyKCS11 import (CKA_CLASS, CKA_ID, CKA_VALUE, CKF_RW_SESSION,
+                     CKF_SERIAL_SESSION, CKO_CERTIFICATE, PyKCS11Lib)
 
 
 def find_pkcs11_library(raw_path=None):

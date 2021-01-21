@@ -6,7 +6,6 @@ from configparser import ConfigParser
 from io import StringIO
 
 import certifi
-
 import six
 
 from .exceptions import CertificatesFileNotFound, ProfileNotFound
