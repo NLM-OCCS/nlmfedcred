@@ -10,4 +10,5 @@
 /junit.xml
 /.tox/
 /.idea/
+/site/
 .DS_Store

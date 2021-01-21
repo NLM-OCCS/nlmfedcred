@@ -6,6 +6,12 @@ nav:
   - How To: howto.md
   - Trouble Shooting: trouble.md
   - Smartcard Utility: smartcard.md
+plugins:
+  - search
+  - pdf-export:
+      verbose: true
+      media_type: print
+      enabled_if_env: ENABLE_PDF_EXPORT
 theme: readthedocs
 repo_name: BitBucket
 repo_url: https://git-scm.nlm.nih.gov/projects/CS/repos/nlmfedcred/
