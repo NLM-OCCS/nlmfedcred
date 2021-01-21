@@ -105,6 +105,10 @@ def export_pubkey_command(opts):
 
 
 def setup_command(opts):
+    if sys.platform != 'win32':
+        print('PIV login is only supported on Windows', file=sys.stderr)
+        return 0
+
     pin = getpass('Enter PIN: ')
     path = find_pkcs11_library(opts.lib)
     certs = read_certs(pin, path)
