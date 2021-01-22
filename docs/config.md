@@ -51,7 +51,7 @@ configurable parameters. These are also available on the command-line.
 
 | Option   | Description |
 |----------|-------------|
-| idp      | Which federated server to use for authentication | 
+| idp      | Which federated server to use for authentication. This can optionally be a full url |
 | account  | The AWS account number |  
 | role     | The role within AWS - may be an ARN or a name |
 | duration | Controls the requested duration for the temporary credentials |
@@ -59,3 +59,15 @@ configurable parameters. These are also available on the command-line.
 | username | Allows a user to authenticate with a different username, for example a Service Account |
 
 &nbsp;
+
+## Setting the IDP (Identity Provider)
+
+The IDP is typically set to "authtest.nih.gov" or "auth.nih.gov".
+Through substitution, "authtest.nih.gov" would become the following:
+
+```
+https://authtest.nih.gov/affwebservices/public/saml2sso?SPID=urn:amazon:webservices&appname=NLM
+```
+
+You can optionally set the idp to the full URL as well in case you need to test
+something unusual.
