@@ -56,7 +56,7 @@ username - might be useful for a new service account, or one
 just moving from Development and integration to later stages:
 
 ```
-getawscreds --username ServiceAccount --idp auth.nih.gov --samlout service-saml.xml
+getawscreds --username ServiceAccount --idp authexample.nih.gov --samlout service-saml.xml
 ```
 
 ### I tried to extend the duration

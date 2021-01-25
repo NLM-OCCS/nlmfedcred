@@ -38,30 +38,22 @@ There after, you can use this bundle with both getawscreds and with the aws comm
 The program looks for an INI file called `%APPDATA%\getawscreds.ini` or `$HOME/.getawscreds`:
 On Windows, `%USERPROFILE%\.getawscreds` is still supported.
 
-The defaults go in a seciton called `[DEFAULTS`, and each additional section becomes a named profile you can use with the `--profile` or `-p` command-line flag.   The configuration file is typically used to provide names and federated login points for different accounts, but can also be used to provide specific roles.   A typical configuration for NLM's own environment is as follows:
+The defaults go in a section called `[DEFAULT]`, and each additional section becomes a named profile you can use with the `--profile` or `-p` command-line flag.   The configuration file is typically used to provide names and federated login points for different accounts, but can also be used to provide specific roles.   A typical configuration for NLM's own environment is as follows:
 
     [DEFAULT]
-    role = nlm_aws_users
+    role = myapp_user_role
 
-    [NLM-INT]
-    idp = authtest.nih.gov
-    account = 758297805533
+    [int]
+    idp = fubartest.nih.gov
+    account = 999999999901
 
-    [NLM-WG]
-    idp = authtest.nih.gov
-    account = 765460880451
+    [qa]
+    idp = fubar.nih.gov
+    account = 999999999902
 
-    [NLM-PROD]
-    idp = auth.nih.gov
-    account = 070163433501
-
-    [NLM-QA]
-    idp = auth.nih.gov
-    account = 491634416615
-
-    [NLM-SEC]
-    idp = auth.nih.gov
-    account = 867452570402
+    [prod]
+    idp = fubar.nih.gov
+    account = 999999999903
 
 ### Region
 
@@ -73,7 +65,7 @@ or with the environment variable `AWS_DEFAULT_REGION`.
 
 ### More Options
 
-You can get usage in the tyical way:
+You can get usage in the typical way:
 
     getawscreds -h
 
