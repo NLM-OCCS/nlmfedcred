@@ -28,20 +28,22 @@ role = nlm_aws_users
 
 ## Profile Specific Options
 
-Roles such as "devel" or "prod" might be specified as follows:
+Roles such as "devel" or "prod" might be specified as below.
 
 ```ini
 [devel]
 idp = authtest.nih.gov
-account = 232258963078
+account = 999999999900
 duration = 14400
-role = nlm_aws_myapp_user
+role = myapp_poweruser_role
 
 [prod]
 idp = auth.nih.gov
-account = 070163433501
-role = nlm_aws_users
+account = 999999999901
+role = myapp_user_role
 ```
+
+__NOTE:__ These are not AWS account numbers or roles.
 
 ## Supported Options
 
@@ -62,11 +64,10 @@ configurable parameters. These are also available on the command-line.
 
 ## Setting the IDP (Identity Provider)
 
-The IDP is typically set to "authtest.nih.gov" or "auth.nih.gov".
-Through substitution, "authtest.nih.gov" would become the following:
+The IDP has a default, and typical values. Through substitution, "authexample.nih.gov" would become the following:
 
 ```
-https://authtest.nih.gov/affwebservices/public/saml2sso?SPID=urn:amazon:webservices&appname=NLM
+https://authexample.nih.gov/affwebservices/public/saml2sso?SPID=urn:amazon:webservices&appname=NLM
 ```
 
 You can optionally set the idp to the full URL as well in case you need to test

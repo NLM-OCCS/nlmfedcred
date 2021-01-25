@@ -45,15 +45,17 @@ Typical output after you enter your password would be something like this:
 Multiple potential roles found. Use --account or --role argument to limit to one.
 
 Available roles below:
-  arn:aws:iam::232258963078:role/nlm_aws_users
-  arn:aws:iam::232258963078:role/nlm_aws_ab_django_user
-  arn:aws:iam::758297805533:role/nlm_aws_users
-  arn:aws:iam::204225352087:role/nlm_aws_users
-  arn:aws:iam::272956248402:role/nlm_aws_users
-  arn:aws:iam::626642342379:role/nlm_aws_users
-  arn:aws:iam::976194488961:role/nlm_aws_users
-  arn:aws:iam::740347601350:role/nlm_aws_users
+  arn:aws:iam::999999999900:role/myapp_user_role
+  arn:aws:iam::999999999900:role/myapp_power_role
+  arn:aws:iam::999999999901:role/myorg_user_role
+  arn:aws:iam::999999999902:role/myorg_user_role
+  arn:aws:iam::999999999903:role/myorg_user_role
+  arn:aws:iam::999999999904:role/myorg_user_role
+  arn:aws:iam::999999999905:role/myorg_user_role
+  arn:aws:iam::999999999906:role/myorg_user_role
 ```
+
+__NOTE:__ These are not real AWS role ARNs.
 
 ## How do I get credentials without saving them
 
@@ -84,11 +86,11 @@ Here's an example:
 ```ini
 [DEFAULT]
 subject = Daniel A. Davis -A (Affiliate)
-idp = authtest.nih.gov
+idp = authexample.nih.gov
 
 [devel]
-account = 232258963078
-role = nlm_aws_users
+account = 999999999901
+role = myapp_user_role
 ```
 
 Now, I can authenticate as follows:
