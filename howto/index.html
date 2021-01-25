@@ -1,0 +1,225 @@
+<!DOCTYPE html>
+<!--[if IE 8]><html class="no-js lt-ie9" lang="en" > <![endif]-->
+<!--[if gt IE 8]><!--> <html class="no-js" lang="en" > <!--<![endif]-->
+<head>
+  <meta charset="utf-8">
+  <meta http-equiv="X-UA-Compatible" content="IE=edge">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  
+  <meta name="author" content="Dan Davis">
+  
+  <link rel="shortcut icon" href="../img/favicon.ico">
+  <title>How To - nlmfedcred</title>
+  <link rel="stylesheet" href="https://fonts.googleapis.com/css?family=Lato:400,700|Roboto+Slab:400,700|Inconsolata:400,700" />
+
+  <link rel="stylesheet" href="../css/theme.css" />
+  <link rel="stylesheet" href="../css/theme_extra.css" />
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/9.12.0/styles/github.min.css" />
+  
+  <script>
+    // Current page data
+    var mkdocs_page_name = "How To";
+    var mkdocs_page_input_path = "howto.md";
+    var mkdocs_page_url = null;
+  </script>
+  
+  <script src="../js/jquery-2.1.1.min.js" defer></script>
+  <script src="../js/modernizr-2.8.3.min.js" defer></script>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/9.12.0/highlight.min.js"></script>
+  <script>hljs.initHighlightingOnLoad();</script> 
+  
+</head>
+
+<body class="wy-body-for-nav" role="document">
+
+  <div class="wy-grid-for-nav">
+
+    
+    <nav data-toggle="wy-nav-shift" class="wy-nav-side stickynav">
+    <div class="wy-side-scroll">
+      <div class="wy-side-nav-search">
+        <a href=".." class="icon icon-home"> nlmfedcred</a>
+        <div role="search">
+  <form id ="rtd-search-form" class="wy-form" action="../search.html" method="get">
+    <input type="text" name="q" placeholder="Search docs" title="Type search term here" />
+  </form>
+</div>
+      </div>
+
+      <div class="wy-menu wy-menu-vertical" data-spy="affix" role="navigation" aria-label="main navigation">
+                <ul>
+                    <li class="toctree-l1"><a class="reference internal" href="..">About</a>
+                    </li>
+                </ul>
+                <ul>
+                    <li class="toctree-l1"><a class="reference internal" href="../install/">Installation</a>
+                    </li>
+                </ul>
+                <ul>
+                    <li class="toctree-l1"><a class="reference internal" href="../config/">Configuration</a>
+                    </li>
+                </ul>
+                <ul class="current">
+                    <li class="toctree-l1 current"><a class="reference internal current" href="./">How To</a>
+    <ul class="current">
+    </ul>
+                    </li>
+                </ul>
+                <ul>
+                    <li class="toctree-l1"><a class="reference internal" href="../trouble/">Trouble Shooting</a>
+                    </li>
+                </ul>
+                <ul>
+                    <li class="toctree-l1"><a class="reference internal" href="../smartcard/">Smartcard Utility</a>
+                    </li>
+                </ul>
+      </div>
+    </div>
+    </nav>
+
+    <section data-toggle="wy-nav-shift" class="wy-nav-content-wrap">
+
+      
+      <nav class="wy-nav-top" role="navigation" aria-label="top navigation">
+        <i data-toggle="wy-nav-top" class="fa fa-bars"></i>
+        <a href="..">nlmfedcred</a>
+      </nav>
+
+      
+      <div class="wy-nav-content">
+        <div class="rst-content">
+          <div role="navigation" aria-label="breadcrumbs navigation">
+  <ul class="wy-breadcrumbs">
+    <li><a href="..">Docs</a> &raquo;</li>
+    
+      
+    
+    <li>How To</li>
+    <li class="wy-breadcrumbs-aside">
+      
+    </li>
+  </ul>
+  
+  <hr/>
+</div>
+          <div role="main">
+            <div class="section">
+              
+                <h2 id="typical-usage-with-a-profile">Typical Usage with a Profile</h2>
+<p>Once the configuration file has been setup, the typical usage
+is to authenticate the current user to a named profile:</p>
+<pre><code class="language-bash">getawscreds -p prod
+</code></pre>
+<p>This will lookup the profile section called "[prod]" or fallback to
+the section called "[DEFAULT]", prompt the user for a password, submit the form,
+obtain credentials from AWS, and then write these to the AWS
+credentials file.</p>
+<p>Then, you can use the AWS CLI with that profile:</p>
+<pre><code class="language-bash">aws ec2 describe-regions --profile prod
+</code></pre>
+<h2 id="what-if-i-do-not-want-to-type-profile">What if I do not want to type --profile?</h2>
+<p>If you define the environment variable "AWS_PROFILE", the aws
+command-line will honor it, and you can omit the argument to getawscreds:</p>
+<pre><code class="language-bash">getawscreds -p
+</code></pre>
+<h2 id="what-roles-are-available-to-me">What roles are available to me?</h2>
+<p>Simply run getawscreds without arguments:</p>
+<pre><code class="language-bash">getawscreds
+</code></pre>
+<p>Typical output after you enter your password would be something like this:</p>
+<pre><code>Multiple potential roles found. Use --account or --role argument to limit to one.
+
+Available roles below:
+  arn:aws:iam::999999999900:role/myapp_user_role
+  arn:aws:iam::999999999900:role/myapp_power_role
+  arn:aws:iam::999999999901:role/myorg_user_role
+  arn:aws:iam::999999999902:role/myorg_user_role
+  arn:aws:iam::999999999903:role/myorg_user_role
+  arn:aws:iam::999999999904:role/myorg_user_role
+  arn:aws:iam::999999999905:role/myorg_user_role
+  arn:aws:iam::999999999906:role/myorg_user_role
+</code></pre>
+<p><strong>NOTE:</strong> These are not real AWS role ARNs.</p>
+<h2 id="how-do-i-get-credentials-without-saving-them">How do I get credentials without saving them</h2>
+<p>With a service account you can use the "--shell"
+console parameter along with a password:</p>
+<pre><code>getawscreds -p int --shell bash --password XXXXXXXXXXXXXXXX
+</code></pre>
+<p>This is not secure or really cloud-native, but it could
+be needed while you are getting started.</p>
+<p>You can also get output appropriate for the Windows
+command prompt:</p>
+<pre><code>getawscreds -p int --shell cmd
+</code></pre>
+<h2 id="how-can-i-authenticate-with-my-piv">How can I authenticate with my PIV?</h2>
+<p>You need to tell getawscreds which certificate to use by 
+configuring the "subject" parameter in the configuration.</p>
+<p>Here's an example:</p>
+<pre><code class="language-ini">[DEFAULT]
+subject = Daniel A. Davis -A (Affiliate)
+idp = authexample.nih.gov
+
+[devel]
+account = 999999999901
+role = myapp_user_role
+</code></pre>
+<p>Now, I can authenticate as follows:</p>
+<pre><code class="language-bash">getawscreds -p devel --piv
+</code></pre>
+<p>If you just logged in or authenticated to a website, you may
+not be prompted for your PIV at all.</p>
+<p><strong>Note</strong>: This feature only supports Windows 10, and is pretty new.</p>
+              
+            </div>
+          </div>
+          <footer>
+  
+    <div class="rst-footer-buttons" role="navigation" aria-label="footer navigation">
+      
+        <a href="../trouble/" class="btn btn-neutral float-right" title="Trouble Shooting">Next <span class="icon icon-circle-arrow-right"></span></a>
+      
+      
+        <a href="../config/" class="btn btn-neutral" title="Configuration"><span class="icon icon-circle-arrow-left"></span> Previous</a>
+      
+    </div>
+  
+
+  <hr/>
+
+  <div role="contentinfo">
+    <!-- Copyright etc -->
+    
+  </div>
+
+  Built with <a href="https://www.mkdocs.org/">MkDocs</a> using a <a href="https://github.com/snide/sphinx_rtd_theme">theme</a> provided by <a href="https://readthedocs.org">Read the Docs</a>.
+</footer>
+      
+        </div>
+      </div>
+
+    </section>
+
+  </div>
+
+  <div class="rst-versions" role="note" aria-label="versions">
+    <span class="rst-current-version" data-toggle="rst-current-version">
+      
+      
+        <span><a href="../config/" style="color: #fcfcfc;">&laquo; Previous</a></span>
+      
+      
+        <span style="margin-left: 15px"><a href="../trouble/" style="color: #fcfcfc">Next &raquo;</a></span>
+      
+    </span>
+</div>
+    <script>var base_url = '..';</script>
+    <script src="../js/theme.js" defer></script>
+      <script src="../search/main.js" defer></script>
+    <script defer>
+        window.onload = function () {
+            SphinxRtdTheme.Navigation.enable(true);
+        };
+    </script>
+
+</body>
+</html>

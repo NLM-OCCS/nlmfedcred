@@ -1,0 +1,11 @@
+*.pyo
+*.pyc
+/dist/
+/build/
+/MANIFEST
+*.egg-info
+/.cache/
+/.coverage
+/coverage.xml
+/junit.xml
+/.tox/

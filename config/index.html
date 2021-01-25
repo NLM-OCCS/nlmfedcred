@@ -1,0 +1,234 @@
+<!DOCTYPE html>
+<!--[if IE 8]><html class="no-js lt-ie9" lang="en" > <![endif]-->
+<!--[if gt IE 8]><!--> <html class="no-js" lang="en" > <!--<![endif]-->
+<head>
+  <meta charset="utf-8">
+  <meta http-equiv="X-UA-Compatible" content="IE=edge">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  
+  <meta name="author" content="Dan Davis">
+  
+  <link rel="shortcut icon" href="../img/favicon.ico">
+  <title>Configuration - nlmfedcred</title>
+  <link rel="stylesheet" href="https://fonts.googleapis.com/css?family=Lato:400,700|Roboto+Slab:400,700|Inconsolata:400,700" />
+
+  <link rel="stylesheet" href="../css/theme.css" />
+  <link rel="stylesheet" href="../css/theme_extra.css" />
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/9.12.0/styles/github.min.css" />
+  
+  <script>
+    // Current page data
+    var mkdocs_page_name = "Configuration";
+    var mkdocs_page_input_path = "config.md";
+    var mkdocs_page_url = null;
+  </script>
+  
+  <script src="../js/jquery-2.1.1.min.js" defer></script>
+  <script src="../js/modernizr-2.8.3.min.js" defer></script>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/9.12.0/highlight.min.js"></script>
+  <script>hljs.initHighlightingOnLoad();</script> 
+  
+</head>
+
+<body class="wy-body-for-nav" role="document">
+
+  <div class="wy-grid-for-nav">
+
+    
+    <nav data-toggle="wy-nav-shift" class="wy-nav-side stickynav">
+    <div class="wy-side-scroll">
+      <div class="wy-side-nav-search">
+        <a href=".." class="icon icon-home"> nlmfedcred</a>
+        <div role="search">
+  <form id ="rtd-search-form" class="wy-form" action="../search.html" method="get">
+    <input type="text" name="q" placeholder="Search docs" title="Type search term here" />
+  </form>
+</div>
+      </div>
+
+      <div class="wy-menu wy-menu-vertical" data-spy="affix" role="navigation" aria-label="main navigation">
+                <ul>
+                    <li class="toctree-l1"><a class="reference internal" href="..">About</a>
+                    </li>
+                </ul>
+                <ul>
+                    <li class="toctree-l1"><a class="reference internal" href="../install/">Installation</a>
+                    </li>
+                </ul>
+                <ul class="current">
+                    <li class="toctree-l1 current"><a class="reference internal current" href="./">Configuration</a>
+    <ul class="current">
+    </ul>
+                    </li>
+                </ul>
+                <ul>
+                    <li class="toctree-l1"><a class="reference internal" href="../howto/">How To</a>
+                    </li>
+                </ul>
+                <ul>
+                    <li class="toctree-l1"><a class="reference internal" href="../trouble/">Trouble Shooting</a>
+                    </li>
+                </ul>
+                <ul>
+                    <li class="toctree-l1"><a class="reference internal" href="../smartcard/">Smartcard Utility</a>
+                    </li>
+                </ul>
+      </div>
+    </div>
+    </nav>
+
+    <section data-toggle="wy-nav-shift" class="wy-nav-content-wrap">
+
+      
+      <nav class="wy-nav-top" role="navigation" aria-label="top navigation">
+        <i data-toggle="wy-nav-top" class="fa fa-bars"></i>
+        <a href="..">nlmfedcred</a>
+      </nav>
+
+      
+      <div class="wy-nav-content">
+        <div class="rst-content">
+          <div role="navigation" aria-label="breadcrumbs navigation">
+  <ul class="wy-breadcrumbs">
+    <li><a href="..">Docs</a> &raquo;</li>
+    
+      
+    
+    <li>Configuration</li>
+    <li class="wy-breadcrumbs-aside">
+      
+    </li>
+  </ul>
+  
+  <hr/>
+</div>
+          <div role="main">
+            <div class="section">
+              
+                <h2 id="path">Path</h2>
+<p>On Windows, the <code>getawscreds</code> command-line looks first in <code>%APPDATA%\getawscreds.ini</code>, and then 
+at <code>%USERPROFILE%\.getawscreds</code>. On Linux and MacOX, the only location checked is <code>~/.getawscreds</code>.</p>
+<h2 id="purpose-of-configuration">Purpose of Configuration</h2>
+<p>The configuration is meant only to define the options that correspond
+to <a href="https://docs.aws.amazon.com/cli/latest/userguide/cli-configure-profiles.html">Named Profiles</a>.</p>
+<p>Sections of the configuration file define options for a specific
+named profile, and the command-line typically saves the credentials to that named profile.</p>
+<h2 id="default-options">Default Options</h2>
+<p>The defaults that apply to all named profiles are in a section
+called "[DEFAULT]". For example, to set the default
+role within AWS to one named "nlm_aws_users", you would write:</p>
+<pre><code class="language-ini">[DEFAULT]
+role = nlm_aws_users
+</code></pre>
+<h2 id="profile-specific-options">Profile Specific Options</h2>
+<p>Roles such as "devel" or "prod" might be specified as below.</p>
+<pre><code class="language-ini">[devel]
+idp = authtest.nih.gov
+account = 999999999900
+duration = 14400
+role = myapp_poweruser_role
+
+[prod]
+idp = auth.nih.gov
+account = 999999999901
+role = myapp_user_role
+</code></pre>
+<p><strong>NOTE:</strong> These are not AWS account numbers or roles.</p>
+<h2 id="supported-options">Supported Options</h2>
+<p>Each section within the configuration file supports these
+configurable parameters. These are also available on the command-line.</p>
+<table>
+<thead>
+<tr>
+<th>Option</th>
+<th>Description</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>idp</td>
+<td>Which federated server to use for authentication. This can optionally be a full url</td>
+</tr>
+<tr>
+<td>account</td>
+<td>The AWS account number</td>
+</tr>
+<tr>
+<td>role</td>
+<td>The role within AWS - may be an ARN or a name</td>
+</tr>
+<tr>
+<td>duration</td>
+<td>Controls the requested duration for the temporary credentials</td>
+</tr>
+<tr>
+<td>subject</td>
+<td>Controls which smartcard certificate will be used when authenticating by PIV</td>
+</tr>
+<tr>
+<td>username</td>
+<td>Allows a user to authenticate with a different username, for example a Service Account</td>
+</tr>
+</tbody>
+</table>
+<p>&nbsp;</p>
+<h2 id="setting-the-idp-identity-provider">Setting the IDP (Identity Provider)</h2>
+<p>The IDP has a default, and typical values. Through substitution, "authexample.nih.gov" would become the following:</p>
+<pre><code>https://authexample.nih.gov/affwebservices/public/saml2sso?SPID=urn:amazon:webservices&amp;appname=NLM
+</code></pre>
+<p>You can optionally set the idp to the full URL as well in case you need to test
+something unusual.</p>
+              
+            </div>
+          </div>
+          <footer>
+  
+    <div class="rst-footer-buttons" role="navigation" aria-label="footer navigation">
+      
+        <a href="../howto/" class="btn btn-neutral float-right" title="How To">Next <span class="icon icon-circle-arrow-right"></span></a>
+      
+      
+        <a href="../install/" class="btn btn-neutral" title="Installation"><span class="icon icon-circle-arrow-left"></span> Previous</a>
+      
+    </div>
+  
+
+  <hr/>
+
+  <div role="contentinfo">
+    <!-- Copyright etc -->
+    
+  </div>
+
+  Built with <a href="https://www.mkdocs.org/">MkDocs</a> using a <a href="https://github.com/snide/sphinx_rtd_theme">theme</a> provided by <a href="https://readthedocs.org">Read the Docs</a>.
+</footer>
+      
+        </div>
+      </div>
+
+    </section>
+
+  </div>
+
+  <div class="rst-versions" role="note" aria-label="versions">
+    <span class="rst-current-version" data-toggle="rst-current-version">
+      
+      
+        <span><a href="../install/" style="color: #fcfcfc;">&laquo; Previous</a></span>
+      
+      
+        <span style="margin-left: 15px"><a href="../howto/" style="color: #fcfcfc">Next &raquo;</a></span>
+      
+    </span>
+</div>
+    <script>var base_url = '..';</script>
+    <script src="../js/theme.js" defer></script>
+      <script src="../search/main.js" defer></script>
+    <script defer>
+        window.onload = function () {
+            SphinxRtdTheme.Navigation.enable(true);
+        };
+    </script>
+
+</body>
+</html>
