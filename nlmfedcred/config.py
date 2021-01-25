@@ -6,7 +6,6 @@ from configparser import ConfigParser
 from io import StringIO
 
 import certifi
-
 import six
 
 from .exceptions import CertificatesFileNotFound, ProfileNotFound
@@ -134,6 +133,11 @@ def get_aws_credentials_path():
 
 def get_awscreds_config_path():
     # THis function exists to allow mocking during test plans
+    appdata_path = os.environ.get('APPDATA', None)
+    if appdata_path:
+        getawscreds_path = os.path.join(appdata_path, 'getawscreds.ini')
+        if os.path.exists(getawscreds_path):
+            return getawscreds_path
     return os.path.join(get_home(), '.getawscreds')
 
 

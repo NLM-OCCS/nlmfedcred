@@ -5,6 +5,7 @@ from base64 import b64decode
 from datetime import datetime
 
 import pytest
+
 from nlmfedcred import fedcred
 
 

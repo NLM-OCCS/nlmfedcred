@@ -4,7 +4,6 @@ from argparse import ArgumentParser
 import win32api
 import win32con
 
-
 # Places where there actually are certificates:
 #
 # HKEY_CURRENT_USER\Software\Microsoft\SystemCertificates\CA\Certificates
