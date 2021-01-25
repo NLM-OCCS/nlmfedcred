@@ -9,9 +9,8 @@ from base64 import b64decode
 from collections import namedtuple
 from datetime import datetime, timedelta
 
-import requests
-
 import boto3
+import requests
 from bs4 import BeautifulSoup
 from lxml import etree
 

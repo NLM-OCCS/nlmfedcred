@@ -3,6 +3,7 @@ from argparse import ArgumentParser
 from urllib.parse import quote_plus, urlsplit, urlunsplit
 
 from bs4 import BeautifulSoup
+
 import pythoncom
 import win32com.client
 

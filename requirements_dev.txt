@@ -2,6 +2,7 @@
 
 ipython
 awscli
-tox
+isort
 flake8
-isort[requirements]
+mkdocs
+tox

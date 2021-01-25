@@ -38,7 +38,7 @@ setup(
     long_description_content_type='text/markdown; charset=UTF-8; variant=CommonMark',
     author='Dan Davis',
     author_email='daniel.davis@nih.gov',
-    url='https://git-scm.nlm.nih.gov/projects/CS/repos/nlmfedcred/',
+    url='https://github.com/NLM-OCCS/nlmfedcred',
     packages=find_packages(),
     include_package_data=True,
     scripts=['bin/getawscreds.py', 'bin/awscreds.cmd', 'bin/awscreds-func.sh'],
@@ -48,8 +48,12 @@ setup(
         'requests',
         'beautifulsoup4',
         'lxml',
+        'cryptography',
         "pywin32; sys_platform=='win32'",
     ],
+    extras_require={
+        'smartcard': ['PyKCS11'],
+    },
     tests_require=[
         'pytest',
         'pytest-cov',
@@ -60,7 +64,8 @@ setup(
         'purge': PurgeCommand,
     },
     entry_points={'console_scripts': [
-        'getawscreds = nlmfedcred.cli:execute_from_command_line',
+        'getawscreds = nlmfedcred.cli:main',
+        'smartcard = nlmfedcred.smartcard:main',
     ]},
     classifiers=[
         'Development Status :: 4 - Beta',
@@ -69,12 +74,12 @@ setup(
         'Intended Audience :: Developers',
         'Intended Audience :: System Administrators',
         'Operating System :: MacOS :: MacOS X',
-        'Operating System :: Mocrosoft :: Windows',
+        'Operating System :: Microsoft :: Windows',
         'Operating System :: POSIX',
-        'Programming Language :: Python :: 2.7',
         'Programming Language :: Python :: 3.5',
         'Programming Language :: Python :: 3.6',
         'Topic :: System :: System Administration',
         'Topic :: Utilities',
     ],
+    python_requires=">=3.5",
 )

@@ -1,7 +1,8 @@
 import sys
 from argparse import ArgumentParser
-from urllib.request import HTTPCookieProcessor, build_opener
 from http.cookiejar import CookieJar
+from urllib.request import HTTPCookieProcessor, build_opener
+
 from bs4 import BeautifulSoup
 
 AUTH_URL = 'https://authtest.nih.gov/affwebservices/public/saml2sso?SPID=urn:amazon:webservices&appname=NLM'

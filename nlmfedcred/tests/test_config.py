@@ -4,6 +4,7 @@ Test ability to parse configuration files
 import os
 
 import pytest
+
 from nlmfedcred.config import (get_home, get_user, parse_config,
                                setup_certificates)
 from nlmfedcred.exceptions import ProfileNotFound

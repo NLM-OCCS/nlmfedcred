@@ -1,6 +1,6 @@
 import os
 
-from nlmfedcred.cli import execute_from_command_line, output_creds
+from nlmfedcred.cli import main, output_creds
 from nlmfedcred.fedcred import Credentials
 from nlmfedcred.idp import DEFAULT_IDP
 
@@ -25,7 +25,7 @@ def test_setup_certs(tmpdir):
         '--setupcerts',
         testbundle,
     ]
-    rc = execute_from_command_line(args=args)
+    rc = main(args=args)
     assert os.path.exists(testbundle)
     assert rc == 0
 
@@ -45,7 +45,7 @@ def test_samlout(tmpdir, mocker, samldata):
     getpass = mocker.patch('nlmfedcred.cli.getpass', return_value='fake password')
     make_idp = mocker.patch('nlmfedcred.cli.make_idp', return_value=DEFAULT_IDP)
     get_saml_assertion = mocker.patch('nlmfedcred.cli.fedcred.get_saml_assertion', return_value=samldata)
-    rc = execute_from_command_line(args)
+    rc = main(args)
     assert rc == 0
     assert getpass.call_count == 1
     assert make_idp.call_count == 1
@@ -67,7 +67,7 @@ def test_bad_password(mocker):
     get_saml_assertion = mocker.patch('nlmfedcred.cli.fedcred.get_saml_assertion', return_value='US-EN')
     write_error = mocker.patch('nlmfedcred.cli.sys.stderr.write', return_value=0)
 
-    rc = execute_from_command_line(args)
+    rc = main(args)
 
     assert rc == 1
     assert getpass.call_count == 0
@@ -99,7 +99,7 @@ def test_bash_out(tmpdir, mocker, samldata):
     output_creds_mm = mocker.patch('nlmfedcred.cli.output_creds', wraps=output_creds)
     save_creds = mocker.patch('nlmfedcred.cli.update_aws_credentials', return_value=0)
 
-    rc = execute_from_command_line(args)
+    rc = main(args)
 
     assert rc == 0
     assert getpass.call_count == 1
@@ -133,7 +133,7 @@ def test_named_profile(tmpdir, mocker, samldata):
     output_creds_mm = mocker.patch('nlmfedcred.cli.output_creds', wraps=output_creds)
     save_creds = mocker.patch('nlmfedcred.cli.update_aws_credentials', return_value=0)
 
-    rc = execute_from_command_line(args)
+    rc = main(args)
 
     assert rc == 0
     assert get_awscreds_config_path.call_count == 1
@@ -167,7 +167,7 @@ def test_default_profile(tmpdir, mocker, samldata):
     output_creds_mm = mocker.patch('nlmfedcred.cli.output_creds', wraps=output_creds)
     save_creds = mocker.patch('nlmfedcred.cli.update_aws_credentials', return_value=0)
 
-    rc = execute_from_command_line(args)
+    rc = main(args)
 
     assert rc == 0
     assert get_awscreds_config_path.call_count == 1

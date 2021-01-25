@@ -86,7 +86,7 @@ def output_roles(authroles, stream=sys.stdout):
         stream.write('  %s\n' % pair[1])
 
 
-def execute_from_command_line(args=None):
+def main(args=None):
     fedcred.set_default_creds()
 
     if args is None:
@@ -185,3 +185,7 @@ def execute_from_command_line(args=None):
         profile = opts.profile if opts.profile else 'default'
         update_aws_credentials(opts.region, creds, profile, opts.output)
     return 0
+
+
+if __name__ == '__main__':
+    main()
